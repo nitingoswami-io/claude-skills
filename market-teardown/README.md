@@ -52,13 +52,13 @@ Claude will validate the frontmatter, show you a review card, and save it with o
 
 **Option B — Upload the zip yourself.**
 
-1. From the repo root (one level above this folder), build the `.skill` archive:
+1. Build the `.skill` archive using this skill's own build script:
    ```bash
    git clone https://github.com/<your-username>/claude-skills.git
-   cd claude-skills
-   ./scripts/build-skill.sh market-teardown
+   cd claude-skills/market-teardown
+   ./build.sh
    ```
-   That produces `dist/market-teardown.skill`. (The build script lives at the repo root, not inside this skill folder.)
+   That produces `dist/market-teardown.skill` inside this folder.
 2. In Claude Desktop, go to **Settings → Capabilities → Skills**, click **Upload skill**, and choose the file. (Menu names may vary slightly by app version.)
 3. Wait ~1–2 minutes for the security scan.
 4. When the skill turns green, toggle it on.

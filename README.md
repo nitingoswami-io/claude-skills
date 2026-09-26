@@ -2,7 +2,7 @@
 
 A small, growing collection of [Claude Skills](https://docs.claude.com/en/docs/claude-code/skills) built for real work and released for anyone to use, adapt, and remix.
 
-Each skill in this repo is a self-contained folder with a `SKILL.md` manifest, supporting references, and its own README. Skills are opinionated — they encode a specific way of doing a specific thing well, so you can install one and get a good result on your first try.
+**Each skill is a fully self-contained folder.** Everything a skill needs — its manifest, references, build script, license, and README — lives inside its own directory. You can `git clone` this repo and cherry-pick a single skill folder into `~/.claude/skills/` without dragging the rest of the repo along. Skills are opinionated: they encode a specific way of doing a specific thing well, so you install one and get a good result on your first try.
 
 ## Skills in this repo
 
@@ -43,13 +43,13 @@ Claude will validate the frontmatter, show you a review card, and save it in one
 
 **Option B — Upload the zip yourself.**
 
-1. Build the `.skill` archive:
+1. Build the `.skill` archive using the skill's own build script:
    ```bash
    git clone https://github.com/<your-username>/claude-skills.git
-   cd claude-skills
-   ./scripts/build-skill.sh market-teardown
+   cd claude-skills/market-teardown
+   ./build.sh
    ```
-   That produces `dist/market-teardown.skill`.
+   That produces `dist/market-teardown.skill` inside the skill folder.
 2. In Claude Desktop, go to **Settings → Capabilities → Skills**, click **Upload skill**, and choose the file. (Menu names may vary slightly by app version.)
 3. Wait ~1–2 minutes for the security scan.
 4. When the skill turns green, toggle it on.
@@ -61,7 +61,7 @@ Claude will validate the frontmatter, show you a review card, and save it in one
 
 **Common mistakes** (from Anthropic's own guidance):
 
-- Zip structure — the archive must contain the skill *folder* at its root, not the loose files. `scripts/build-skill.sh` gets this right for you.
+- Zip structure — the archive must contain the skill *folder* at its root, not the loose files. Each skill's `build.sh` gets this right for you.
 - Frontmatter — `SKILL.md` must start with a valid YAML `---` block that has both `name` and `description`.
 - `name` field — lowercase and hyphens only, no spaces or capitals.
 - `description` field — must be specific enough that Claude knows when to trigger it.
@@ -70,16 +70,17 @@ Claude will validate the frontmatter, show you a review card, and save it in one
 
 ```
 claude-skills/
-├── README.md                 # you are here
-├── LICENSE                   # MIT
+├── README.md                 # you are here — index of skills
+├── LICENSE                   # MIT (covers the repo as a whole)
 ├── CONTRIBUTING.md           # how to propose changes or new skills
-├── scripts/
-│   └── build-skill.sh        # zip a skill folder into dist/<name>.skill
-└── <skill-name>/             # one directory per skill
+└── <skill-name>/             # one directory per skill — fully self-contained
     ├── SKILL.md              # manifest + instructions (required)
     ├── README.md             # human-facing docs (required)
+    ├── LICENSE               # MIT (travels with the folder)
+    ├── build.sh              # zips this folder into dist/<name>.skill
     ├── references/           # supporting docs Claude reads on demand
-    └── assets/               # templates, snippets, etc.
+    ├── assets/ or examples/  # templates, sample inputs, etc.
+    └── scripts/              # optional: runnable code the skill invokes
 ```
 
 Each skill directory is the source of truth. Zipped `.skill` bundles are build artifacts and are gitignored.
