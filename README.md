@@ -9,6 +9,7 @@ A small, growing collection of [Claude Skills](https://docs.claude.com/en/docs/c
 | Skill | What it does |
 |---|---|
 | [`market-teardown/`](market-teardown/) | Turn your research on any market, product, or startup idea into a data-dense, verdict-driven teardown article (~1,500 words) plus a companion feed post. |
+| [`linkedin-tech-carousel/`](linkedin-tech-carousel/) | Turn one technical topic into a 3-slide LinkedIn carousel — hook, mechanism, payoff — delivered as a swipeable PDF plus PNGs and ready-to-paste post copy. |
 
 More skills will be added over time. See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to propose one.
 

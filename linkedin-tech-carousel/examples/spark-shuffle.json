@@ -1,0 +1,33 @@
+{
+  "theme": "midnight",
+  "aspect": "4:5",
+  "footer": "Your Name · yoursite.com",
+  "slides": [
+    {
+      "kicker": "Spark internals · 1 of 3",
+      "title": "Your Spark job isn't slow. It's shuffling.",
+      "subtitle": "A wide transformation writes every partition to disk before the next stage can read it.",
+      "visual": {"type": "compare",
+        "left": {"heading": "Narrow transformation", "items": ["map, filter, union", "Partition stays on one executor", "No network, no disk write"]},
+        "right": {"heading": "Wide transformation", "good": true, "items": ["groupByKey, join, distinct", "Every executor writes shuffle files", "Data crosses the network"]}}
+    },
+    {
+      "kicker": "2 of 3 · what actually happens",
+      "title": "The four phases of a shuffle",
+      "visual": {"type": "flow", "orientation": "vertical", "nodes": [
+        {"label": "Map side writes", "note": "Each task sorts records into one file per reducer"},
+        {"label": "Spill to disk", "note": "Buffer exceeds spark.shuffle.spill threshold"},
+        {"label": "Fetch over network", "highlight": true, "note": "Reducers pull blocks from every executor"},
+        {"label": "Merge and reduce", "note": "Sorted merge, then your aggregation runs"}]}
+    },
+    {
+      "kicker": "3 of 3 · the fix",
+      "title": "Cut the shuffle, not the cluster",
+      "takeaway": "Doubling executors on a shuffle-bound job buys you more network contention, not more speed.",
+      "visual": {"type": "stat", "items": [
+        {"value": "200", "label": "default shuffle partitions — almost never right for your data volume"},
+        {"value": "10 MB", "label": "broadcast join threshold: raise it and small dimension tables stop shuffling"},
+        {"value": "AQE", "label": "adaptive query execution coalesces partitions at runtime, free in Spark 3.x"}]}
+    }
+  ]
+}
