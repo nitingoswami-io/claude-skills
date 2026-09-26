@@ -25,24 +25,46 @@ You don't need to describe the format — the skill's description matches on phr
 
 ## Install
 
-### Claude Code
+This skill works in both **Claude Code** (the CLI) and **Claude Desktop** (the app). Pick the one you use.
+
+### 1) Claude Code
+
+Copy the skill folder into your local skills directory:
 
 ```bash
 git clone https://github.com/<your-username>/claude-skills.git
 cp -r claude-skills/market-teardown ~/.claude/skills/market-teardown
 ```
 
-Restart Claude Code and it will pick up the skill automatically.
+Restart Claude Code. It auto-discovers the skill — no separate enable step. Try any of the example prompts under [When to use it](#when-to-use-it) to see it fire.
 
-### Claude Desktop
+### 2) Claude Desktop
 
-From the repo root:
+Two easy paths — Option A is the fastest.
 
-```bash
-./scripts/build-skill.sh market-teardown
-```
+**Option A — Ask Claude to install it for you.**
 
-That produces `dist/market-teardown.skill`. In Claude Desktop, go to **Settings → Capabilities → Skills → Add skill** (or the equivalent for your app version) and select the built file.
+1. Open a new chat in Claude Desktop.
+2. **Drag this whole `market-teardown/` folder into the chat** — or attach it with the paperclip / `+` button. Make sure you attach the folder itself, not just `SKILL.md` — the skill relies on files under `references/` and `assets/`, and pasting `SKILL.md` alone will drop them.
+3. Say: *"Please install this as a skill."*
+
+Claude will validate the frontmatter, show you a review card, and save it with one click.
+
+**Option B — Upload the zip yourself.**
+
+1. From the repo root (one level above this folder), build the `.skill` archive:
+   ```bash
+   git clone https://github.com/<your-username>/claude-skills.git
+   cd claude-skills
+   ./scripts/build-skill.sh market-teardown
+   ```
+   That produces `dist/market-teardown.skill`. (The build script lives at the repo root, not inside this skill folder.)
+2. In Claude Desktop, go to **Settings → Capabilities → Skills**, click **Upload skill**, and choose the file. (Menu names may vary slightly by app version.)
+3. Wait ~1–2 minutes for the security scan.
+4. When the skill turns green, toggle it on.
+5. Test it with one of the example prompts below.
+
+If the skill doesn't fire, check that **Code execution and file creation** is enabled in Settings — skills require it. Updating a skill you already uploaded? Just upload the new `.skill` file in its place; it replaces the previous version.
 
 ## Adapt it to your work
 

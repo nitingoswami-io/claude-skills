@@ -14,30 +14,57 @@ More skills will be added over time. See [CONTRIBUTING.md](CONTRIBUTING.md) if y
 
 ## Install a skill
 
-Every skill in this repo works in both Claude Code and Claude Desktop.
+Every skill in this repo works in both **Claude Code** (the CLI) and **Claude Desktop** (the app). Pick the one you use.
 
-### Claude Code
+The examples below use `market-teardown`. Swap in whatever skill you're installing.
 
-Copy the skill folder into your Claude Code skills directory:
+### 1) Claude Code
+
+Copy the skill folder into your local skills directory:
 
 ```bash
 git clone https://github.com/<your-username>/claude-skills.git
 cp -r claude-skills/market-teardown ~/.claude/skills/market-teardown
 ```
 
-Skills placed under `~/.claude/skills/` are auto-discovered on the next Claude Code session. The skill fires when your prompt matches the trigger phrases in the skill's `description:` frontmatter (see the skill's own README for examples).
+Restart Claude Code. It picks up the skill automatically — no separate enable step. The skill fires whenever your prompt matches the trigger phrases in its `description:` frontmatter (see the skill's own README for example prompts).
 
-### Claude Desktop
+### 2) Claude Desktop
 
-Claude Desktop expects skills as a single `.skill` zip archive. Build one:
+Two easy paths — Option A is the fastest.
 
-```bash
-git clone https://github.com/<your-username>/claude-skills.git
-cd claude-skills
-./scripts/build-skill.sh market-teardown
-```
+**Option A — Ask Claude to install it for you.**
 
-That writes `dist/market-teardown.skill`. Add it to Claude Desktop via **Settings → Capabilities → Skills → Add skill** (or the equivalent path for your app version) and point it at the built file.
+1. Open a new chat in Claude Desktop.
+2. **Drag the entire `market-teardown/` folder into the chat** — or attach it with the paperclip / `+` button. Make sure you attach the folder itself, not just `SKILL.md` — this skill has supporting files under `references/` and `assets/` that need to be included, and pasting `SKILL.md` alone will drop them.
+3. Say: *"Please install this as a skill."*
+
+Claude will validate the frontmatter, show you a review card, and save it in one click. This is the easiest way and catches formatting mistakes before upload.
+
+**Option B — Upload the zip yourself.**
+
+1. Build the `.skill` archive:
+   ```bash
+   git clone https://github.com/<your-username>/claude-skills.git
+   cd claude-skills
+   ./scripts/build-skill.sh market-teardown
+   ```
+   That produces `dist/market-teardown.skill`.
+2. In Claude Desktop, go to **Settings → Capabilities → Skills**, click **Upload skill**, and choose the file. (Menu names may vary slightly by app version.)
+3. Wait ~1–2 minutes for the security scan.
+4. When the skill turns green, toggle it on.
+5. Test it in a new chat — e.g. *"teardown of on-device inference economics"* — and the skill should fire.
+
+**If the skill doesn't fire**, check that **Code execution and file creation** is enabled under Settings — skills require it.
+
+**Updating a skill you already installed?** Just upload the new `.skill` file in its place; it replaces the previous version.
+
+**Common mistakes** (from Anthropic's own guidance):
+
+- Zip structure — the archive must contain the skill *folder* at its root, not the loose files. `scripts/build-skill.sh` gets this right for you.
+- Frontmatter — `SKILL.md` must start with a valid YAML `---` block that has both `name` and `description`.
+- `name` field — lowercase and hyphens only, no spaces or capitals.
+- `description` field — must be specific enough that Claude knows when to trigger it.
 
 ## Repo layout
 
