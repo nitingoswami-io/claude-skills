@@ -100,7 +100,7 @@ All outputs carry the same content. Write `DESIGN.md` first, then derive the res
    - Save it as `content/demos/<slug>.mdx` in the author's local site checkout when it's on disk.
    - Copy the figures to `public/images/demos/<slug>/`.
    - Otherwise, hand the files to the user.
-   - The frontmatter must validate: `title, dek, date, tags, stack, models, docStatus, layout: spec, sources` (the site renders Credits from `sources`), plus `repoUrl` (the site derives the Fork / Issues / Contribute links from it) and `demoUrl`, `designDocUrl` and `artifactUrl` when known.
+   - The frontmatter must validate: `title, dek, date, tags, stack, models, docStatus, layout: spec, sources` (the site renders Credits from `sources`), plus `repoUrl` (the site derives the Fork / Issues / Contribute links from it) and `demoUrl`, `designDocUrl` and `artifactUrl` when known. `demoUrl` is the hosted live demo: the site turns it into a "Try it live" button on the page and the front-page card, and shows a "Live demo: coming soon" placeholder when it is missing. When a live demo exists, also say so at the top of **Run & verify** ("No install needed to try it: …") and near the top of the demo repo's README.
 
 Conversion rules between formats (details in `references/format.md`):
 

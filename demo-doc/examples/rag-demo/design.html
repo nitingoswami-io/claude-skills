@@ -942,7 +942,8 @@ Context:
 
     <section id="run">
       <h2><span class="num">9</span>Run &amp; verify</h2>
-      <pre class="code">git clone https://github.com/nitingoswami-io/rag-demo.git &amp;&amp; cd rag-demo
+      <p>No install needed to try it: the <a href="https://rag-demo.nitingoswami.io">live demo</a> runs in demo mode, with the three sample knowledge bases and uploads turned off. To run it yourself:</p>
+<pre class="code">git clone https://github.com/nitingoswami-io/rag-demo.git &amp;&amp; cd rag-demo
 docker compose up -d
 cd backend &amp;&amp; python3.12 -m venv .venv &amp;&amp; source .venv/bin/activate
 pip install -r requirements.txt &amp;&amp; cp .env.example .env   # add OPENAI_API_KEY

@@ -177,6 +177,8 @@ rag-demo/
 
 ## 9. Run & verify
 
+No install needed to try it: the [live demo](https://rag-demo.nitingoswami.io) runs in demo mode, with the three sample knowledge bases and uploads turned off. To run it yourself:
+
 ```bash
 git clone https://github.com/nitingoswami-io/rag-demo.git && cd rag-demo
 docker compose up -d
