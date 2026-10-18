@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-label="Component diagram: the Next.js browser app calls three FastAPI routes; ingest.py and rag.py both go through vectorstore.py to reach pgvector and OpenAI. The chat path is highlighted." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<style>/* standalone viewing only — stripped when the figure is inlined into a page */
+svg{color:#17202b} .sk-bg{fill:#ffffff} .sk-fill{fill:#e3f2ef} .sk-accent{stroke:#0f766e} text.sk-accent{fill:#0f766e;stroke:none}
+@media (prefers-color-scheme:dark){svg{color:#e4e9ef} .sk-bg{fill:#161d25} .sk-fill{fill:#15302d} .sk-accent{stroke:#4fd1c0} text.sk-accent{fill:#4fd1c0}}
+</style>
+<defs>
+<filter id="rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+<marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+</defs>
+<g filter="url(#rough)">
+  <rect x="16" y="30" width="210" height="300" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="46" y="74" width="150" height="38" rx="6"/>
+  <rect x="46" y="170" width="150" height="38" rx="6"/>
+  <rect x="46" y="260" width="150" height="38" rx="6" class="sk-accent"/>
+  <path d="M121 112 L121 170" marker-end="url(#arrow)"/>
+  <path d="M46 93 L32 93 L32 279 L46 279" marker-end="url(#arrow)"/>
+  <rect x="290" y="30" width="250" height="370" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="320" y="74" width="190" height="38" rx="6"/>
+  <rect x="310" y="160" width="100" height="38" rx="6"/>
+  <rect x="420" y="160" width="100" height="38" rx="6" class="sk-accent"/>
+  <rect x="320" y="250" width="190" height="38" rx="6" class="sk-accent"/>
+  <rect x="320" y="336" width="190" height="38" rx="6"/>
+  <path d="M380 112 L360 160" marker-end="url(#arrow)"/>
+  <path d="M450 112 L470 160" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M360 198 L385 250" marker-end="url(#arrow)"/>
+  <path d="M470 198 L445 250" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M415 288 L415 336" marker-end="url(#arrow)"/>
+  <path d="M196 189 L320 98" marker-end="url(#arrow)"/>
+  <path d="M196 279 L320 104" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <rect x="612" y="64" width="160" height="52" rx="6"/>
+  <rect x="616" y="68" width="152" height="44" rx="3"/>
+  <path class="sk-accent" d="M612 245 A80.0 9 0 0 0 772 245 A80.0 9 0 0 0 612 245 V305 A80.0 9 0 0 0 772 305 V245"/>
+  <path d="M510 268 L612 272" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M500 250 L630 116" marker-end="url(#arrow)"/>
+  <path d="M520 168 L612 98" class="sk-accent" marker-end="url(#arrow-accent)"/>
+</g>
+<g fill="currentColor" stroke="none">
+  <text x="28" y="50" text-anchor="start" font-size="12" font-weight="700">Browser · Next.js :3000</text>
+  <text x="121.0" y="97.0" text-anchor="middle">page.tsx</text>
+  <text x="121.0" y="193.0" text-anchor="middle">UploadPanel.tsx</text>
+  <text x="121.0" y="283.0" text-anchor="middle" class="sk-accent">ChatPanel.tsx</text>
+  <text x="302" y="50" text-anchor="start" font-size="12" font-weight="700">FastAPI · :8000</text>
+  <text x="415.0" y="97.0" text-anchor="middle">main.py</text>
+  <text x="360.0" y="183.0" text-anchor="middle">ingest.py</text>
+  <text x="470.0" y="183.0" text-anchor="middle" class="sk-accent">rag.py</text>
+  <text x="415.0" y="273.0" text-anchor="middle" class="sk-accent">vectorstore.py</text>
+  <text x="415.0" y="359.0" text-anchor="middle">config.py</text>
+  <rect class="sk-bg" x="156" y="116" width="187" height="17" rx="3"/>
+  <text x="250" y="128" text-anchor="middle" font-size="12">POST /upload · GET /documents</text>
+  <rect class="sk-bg" x="209" y="234" width="70" height="17" rx="3"/>
+  <text x="244" y="246" text-anchor="middle" class="sk-accent" font-size="12">POST /chat</text>
+  <text x="692.0" y="94.0" text-anchor="middle">OpenAI API</text>
+  <text x="692.0" y="277.0" text-anchor="middle">Postgres 16</text>
+  <text x="692.0" y="292.0" text-anchor="middle" font-size="11">+ pgvector</text>
+  <rect class="sk-bg" x="497" y="246" width="126" height="17" rx="3"/>
+  <text x="560" y="258" text-anchor="middle" class="sk-accent" font-size="12">SQL + vector search</text>
+  <rect class="sk-bg" x="569" y="158" width="39" height="17" rx="3"/>
+  <text x="588" y="170" text-anchor="middle" font-size="12">embed</text>
+  <rect class="sk-bg" x="510" y="106" width="101" height="17" rx="3"/>
+  <text x="560" y="118" text-anchor="middle" class="sk-accent" font-size="12">chat completion</text>
+</g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 230" role="img" aria-label="State diagram for the chat panel: Idle goes to Sending on submit; Sending goes to Showing on success or Error on failure; both return to Idle." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<style>/* standalone viewing only — stripped when the figure is inlined into a page */
+svg{color:#17202b} .sk-bg{fill:#ffffff} .sk-fill{fill:#e3f2ef} .sk-accent{stroke:#0f766e} text.sk-accent{fill:#0f766e;stroke:none}
+@media (prefers-color-scheme:dark){svg{color:#e4e9ef} .sk-bg{fill:#161d25} .sk-fill{fill:#15302d} .sk-accent{stroke:#4fd1c0} text.sk-accent{fill:#4fd1c0}}
+</style>
+<defs>
+<filter id="rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+<marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+</defs>
+<g filter="url(#rough)">
+  <path d="M46 110 L100 110" marker-end="url(#arrow)"/>
+  <rect x="100" y="88" width="110" height="44" rx="18"/>
+  <rect x="290" y="88" width="120" height="44" rx="18" class="sk-accent"/>
+  <rect x="490" y="30" width="120" height="44" rx="18"/>
+  <rect x="490" y="150" width="120" height="44" rx="18"/>
+  <path d="M210 110 L290 110" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M410 100 L490 58" marker-end="url(#arrow)"/>
+  <path d="M410 122 L490 168" marker-end="url(#arrow)"/>
+  <path d="M550 30 L550 14 L155 14 L155 88" marker-end="url(#arrow)"/>
+  <path d="M550 194 L550 214 L155 214 L155 132" marker-end="url(#arrow)"/>
+</g>
+<g fill="currentColor" stroke="none">
+  <circle cx="40" cy="110" r="6" fill="currentColor"/>
+  <text x="155.0" y="114.0" text-anchor="middle">Idle</text>
+  <text x="350.0" y="114.0" text-anchor="middle" class="sk-accent">Sending</text>
+  <text x="550.0" y="56.0" text-anchor="middle">Showing</text>
+  <text x="550.0" y="176.0" text-anchor="middle">Error</text>
+  <rect class="sk-bg" x="209" y="88" width="82" height="17" rx="3"/>
+  <text x="250" y="100" text-anchor="middle" class="sk-accent" font-size="12">user submits</text>
+  <rect class="sk-bg" x="422" y="54" width="45" height="17" rx="3"/>
+  <text x="445" y="66" text-anchor="middle" font-size="12">200 OK</text>
+  <rect class="sk-bg" x="401" y="148" width="88" height="17" rx="3"/>
+  <text x="445" y="160" text-anchor="middle" font-size="12">network / 5xx</text>
+  <rect class="sk-bg" x="334" y="6" width="33" height="17" rx="3"/>
+  <text x="350" y="18" text-anchor="middle" font-size="12">done</text>
+  <rect class="sk-bg" x="309" y="198" width="82" height="17" rx="3"/>
+  <text x="350" y="210" text-anchor="middle" font-size="12">user retries</text>
+</g>
+</svg>

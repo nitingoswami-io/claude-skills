@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 963.1999999999999 536" role="img" aria-label="Sequence diagram of one chat turn: the question is embedded, the top four chunks are retrieved from pgvector, a prompt is built from rules, context and recent history, and the grounded answer returns with its sources." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<style>/* standalone viewing only — stripped when the figure is inlined into a page */
+svg{color:#17202b} .sk-bg{fill:#ffffff} .sk-fill{fill:#e3f2ef} .sk-accent{stroke:#0f766e} text.sk-accent{fill:#0f766e;stroke:none}
+@media (prefers-color-scheme:dark){svg{color:#e4e9ef} .sk-bg{fill:#161d25} .sk-fill{fill:#15302d} .sk-accent{stroke:#4fd1c0} text.sk-accent{fill:#4fd1c0}}
+</style>
+<defs>
+<filter id="rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="8" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+<marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+</defs>
+<g filter="url(#rough)">
+  <circle cx="70.0" cy="19" r="9"/>
+  <path d="M70.0 28 V54 M55.0 38 H85.0 M70.0 54 L58.0 72 M70.0 54 L82.0 72"/>
+  <path d="M70.0 76 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="165.2" y="24" width="84" height="34" rx="6"/>
+  <path d="M207.2 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="291.84999999999997" y="24" width="105.10000000000001" height="34" rx="6"/>
+  <path d="M344.4 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="439.59999999999997" y="24" width="84" height="34" rx="6"/>
+  <path d="M481.59999999999997 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="556.1999999999999" y="24" width="125.2" height="34" rx="6"/>
+  <path d="M618.8 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="714.0" y="24" width="84" height="34" rx="6"/>
+  <path d="M756.0 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="850.6999999999999" y="24" width="85.0" height="34" rx="6"/>
+  <path d="M893.1999999999999 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M74.0 116 L203.2 116" marker-end="url(#arrow)"/>
+  <path d="M211.2 146 L340.4 146" marker-end="url(#arrow)"/>
+  <path d="M348.4 176 L477.59999999999997 176" marker-end="url(#arrow)"/>
+  <path d="M485.59999999999997 206 L614.8 206" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M614.8 236 L485.59999999999997 236" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#arrow-accent)"/>
+  <path d="M485.59999999999997 266 L752.0 266" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M752.0 296 L485.59999999999997 296" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#arrow-accent)"/>
+  <path d="M481.59999999999997 320 L507.59999999999997 320 L507.59999999999997 332 L484.59999999999997 332" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M485.59999999999997 356 L889.1999999999999 356" marker-end="url(#arrow)"/>
+  <path d="M889.1999999999999 386 L485.59999999999997 386" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <path d="M477.59999999999997 416 L348.4 416" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <path d="M340.4 446 L211.2 446" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <path d="M203.2 476 L74.0 476" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+</g>
+<g fill="currentColor" stroke="none">
+  <text x="70.0" y="90" text-anchor="middle">User</text>
+  <text x="207.2" y="45.0" text-anchor="middle">ChatPanel</text>
+  <text x="344.4" y="45.0" text-anchor="middle">FastAPI /chat</text>
+  <text x="481.59999999999997" y="45.0" text-anchor="middle">rag.py</text>
+  <text x="618.8" y="45.0" text-anchor="middle">OpenAIEmbeddings</text>
+  <text x="756.0" y="45.0" text-anchor="middle">pgvector</text>
+  <text x="893.1999999999999" y="45.0" text-anchor="middle">ChatOpenAI</text>
+  <rect class="sk-bg" x="79" y="97" width="119" height="17" rx="3"/>
+  <text x="138.6" y="109" text-anchor="middle" font-size="12">1  Type a question</text>
+  <rect class="sk-bg" x="173" y="127" width="206" height="17" rx="3"/>
+  <text x="275.79999999999995" y="139" text-anchor="middle" font-size="12">2  POST /chat {message, history}</text>
+  <rect class="sk-bg" x="326" y="157" width="175" height="17" rx="3"/>
+  <text x="413.0" y="169" text-anchor="middle" font-size="12">3  answer(message, history)</text>
+  <rect class="sk-bg" x="475" y="187" width="150" height="17" rx="3"/>
+  <text x="550.1999999999999" y="199" text-anchor="middle" class="sk-accent" font-size="12">4  embed_query(message)</text>
+  <rect class="sk-bg" x="500" y="217" width="101" height="17" rx="3"/>
+  <text x="550.1999999999999" y="229" text-anchor="middle" class="sk-accent" font-size="12">5  query vector</text>
+  <rect class="sk-bg" x="544" y="247" width="150" height="17" rx="3"/>
+  <text x="618.8" y="259" text-anchor="middle" class="sk-accent" font-size="12">6  cosine search, k = 4</text>
+  <rect class="sk-bg" x="534" y="277" width="169" height="17" rx="3"/>
+  <text x="618.8" y="289" text-anchor="middle" class="sk-accent" font-size="12">7  top-4 chunks + metadata</text>
+  <text x="515.5999999999999" y="330" text-anchor="start" class="sk-accent" font-size="12">8  Build prompt: rules + context + 6 turns</text>
+  <rect class="sk-bg" x="625" y="337" width="126" height="17" rx="3"/>
+  <text x="687.4" y="349" text-anchor="middle" font-size="12">9  invoke(messages)</text>
+  <rect class="sk-bg" x="603" y="367" width="169" height="17" rx="3"/>
+  <text x="687.4" y="379" text-anchor="middle" font-size="12">10  answer with [file p.N]</text>
+  <rect class="sk-bg" x="338" y="397" width="150" height="17" rx="3"/>
+  <text x="413.0" y="409" text-anchor="middle" font-size="12">11  {answer, sources[]}</text>
+  <rect class="sk-bg" x="241" y="427" width="70" height="17" rx="3"/>
+  <text x="275.79999999999995" y="439" text-anchor="middle" font-size="12">12  200 OK</text>
+  <rect class="sk-bg" x="73" y="457" width="132" height="17" rx="3"/>
+  <text x="138.6" y="469" text-anchor="middle" font-size="12">13  Answer + Sources</text>
+</g>
+</svg>

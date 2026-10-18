@@ -1,0 +1,141 @@
+---
+title: '{{Name}}: {{what it does}}'
+dek: >-
+  {{Lede: 1–2 sentences. Same text as the DESIGN.md lede.}}
+date: '{{YYYY-MM-DD}}'
+author: Nitin Goswami
+kicker: Demo · {{Topic}}
+tags:
+  - {{tag}}
+  - coala
+stack:
+  - {{FastAPI}}
+  - {{Next.js}}
+models:
+  - {{model-id}}
+docStatus: {{draft | approved | built}}
+layout: spec
+repoUrl: {{https://github.com/<owner>/{{slug}} — from `git remote`; the site builds Fork/Issues/Contribute links from it}}
+architectures:   # reference architectures (concepts) this demo follows → clickable "Follows" tags
+  - {{architecture-slug}}
+sources:   # credits — see references/credits.md
+  - title: {{Title}}
+    authors: {{Authors}}
+    year: {{Year}}
+    url: {{verified URL — or delete this line}}
+    note: {{What this demo takes from it.}}
+# Add whichever exist; leave the rest out.
+# demoUrl: https://…
+# designDocUrl: https://github.com/<owner>/{{slug}}/blob/main/docs/DESIGN.md
+# artifactUrl: https://claude.ai/…
+---
+
+{/* The site numbers ## sections and <Figure>s automatically: no numbers in the headings below.
+   Figures: hand-drawn SVGs copied to public/images/demos/<slug>/ (see references/diagrams.md). */}
+
+## Purpose & scope
+
+{{What the app teaches. **Bold** the CoALA memories and actions.}}
+
+<PipelineStrip>
+  <Stage k="{{code key}}" t="{{2–4 word action}}">{{CoALA role}}</Stage>
+  <Stage k="{{code key}}" t="{{action}}">{{CoALA role}}</Stage>
+  <Stage k="{{code key}}" t="{{action}}">{{CoALA role}}</Stage>
+  <Stage k="{{code key}}" t="{{action}}">{{CoALA role}}</Stage>
+  <Stage k="{{code key}}" t="{{action}}">{{CoALA role}}</Stage>
+</PipelineStrip>
+
+### In scope
+
+- {{Verb-first capability}}
+
+### Out of scope
+
+{{Deliberately excluded items}}. Section 10 lists these as follow-ups.
+
+## Use cases
+
+<Figure caption="Use case diagram: {{one line}}." src="/images/demos/{{slug}}/fig-01-use-cases.svg" />
+
+| ID  | Use case | Behaviour |
+| --- | -------- | --------- |
+| UC1 | {{Use case}} | {{System behaviour}} |
+
+## Architecture
+
+{{Runtime parts and what each owns.}}
+
+<Figure caption="Component diagram: modules and their dependencies." src="/images/demos/{{slug}}/fig-02-components.svg" />
+
+<Figure caption="Deployment view for {{environment}}." src="/images/demos/{{slug}}/fig-03-deployment.svg" />
+
+## Key flows
+
+### 4.1 {{Flow}}: {{a → b → c}}
+
+<Figure caption="Sequence: {{flow}} (CoALA {{concept}})." src="/images/demos/{{slug}}/fig-04-seq-flow.svg" />
+
+## Backend design
+
+<Figure caption="Class diagram: {{modules and models}}." src="/images/demos/{{slug}}/fig-05-classes.svg" />
+
+| File | Responsibility |
+| ---- | -------------- |
+| `{{path}}` | {{responsibility}} |
+
+### System prompt
+
+<PromptBlock text={`
+{{VERBATIM SYSTEM PROMPT — {placeholders} are safe inside this template literal}}
+`} />
+
+### API contract
+
+| Method | Path | Request | Response |
+| ------ | ---- | ------- | -------- |
+| GET | `{{/path}}` | {{request}} | `{{response}}` |
+
+Errors: {{codes and causes}}.
+
+## Data model
+
+{{Who creates the schema; what one row is.}}
+
+<Figure caption="Entity-relationship diagram of {{store}}." src="/images/demos/{{slug}}/fig-06-er.svg" />
+
+## Frontend design
+
+<Figure caption="Frontend component tree." src="/images/demos/{{slug}}/fig-07-frontend.svg" />
+
+- {{Rendering model}}
+- {{How it calls the API}}
+
+## Project layout
+
+```text
+{{slug}}/
+└── {{dir}}/
+```
+
+## Run & verify
+
+```bash
+git clone {{REPO_URL}}.git && cd {{slug}}
+{{commands}}
+```
+
+| Check | Expected |
+| ----- | -------- |
+| {{health check}} | {{expected}} |
+| {{grounded question}} | {{answer + citation}} |
+| {{bad input}} | {{refusal or 4xx}} |
+
+## Next steps
+
+| Idea | What it teaches |
+| ---- | --------------- |
+| {{idea}} | {{lesson}} |
+
+### Contribute
+
+Fork the repo, pick an idea from the table, and open a pull request. Bugs and unclear steps go in [issues]({{REPO_URL}}/issues/new); the workflow is in [CONTRIBUTING.md]({{REPO_URL}}/blob/main/CONTRIBUTING.md).

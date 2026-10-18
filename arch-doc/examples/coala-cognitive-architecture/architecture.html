@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CoALA</title>
+<meta name="description" content="A reference architecture for thinking about any LLM agent: three kinds of long-term memory, a working memory where the model reasons, an action space, and a decision cycle that ties them together. Explained with two diagrams and one worked example.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: technical spec sheet. Sticky section index on the left (desktop), one reading column, diagrams in framed figures. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #5b6676;
+  --rule: #dde2e8;
+  --accent: #4338ca;
+  --accent-soft: #e0e7ff;
+  --code-bg: #eef1f4;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a1b0;
+    --rule: #2a333e; --accent: #a5b4fc; --accent-soft: #1e1b4b; --code-bg: #1d2630;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a1b0;
+  --rule: #2a333e; --accent: #a5b4fc; --accent-soft: #1e1b4b; --code-bg: #1d2630;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-block: 48px 96px;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 56px;
+}
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 28px 64px; }
+  nav.toc { position: static !important; }
+}
+
+/* Index */
+nav.toc {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 32px);
+  align-self: start;
+  font-size: 13.5px;
+}
+nav.toc .label {
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; margin-bottom: 10px;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; counter-reset: s; }
+nav.toc a {
+  display: flex; gap: 10px; padding: 4px 8px; margin-left: -8px; border-radius: 4px;
+  color: var(--muted); text-decoration: none;
+}
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
+nav.toc a span { font-family: var(--font-mono); font-size: 12px; color: var(--accent); min-width: 1.4em; }
+@media (max-width: 860px) {
+  nav.toc ol { flex-direction: row; flex-wrap: wrap; gap: 4px 8px; }
+}
+
+/* Header */
+header.doc { display: flex; flex-direction: column; gap: 14px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--accent); letter-spacing: .04em; }
+h1 {
+  font-family: var(--font-display); font-weight: 650; font-size: clamp(2rem, 4.5vw, 2.9rem);
+  line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -.01em;
+}
+.lede { font-size: 1.1rem; color: var(--muted); max-width: 62ch; margin: 0; }
+dl.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px 24px; margin: 8px 0 0; }
+dl.meta div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+dl.meta dt { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+dl.meta dd { margin: 0; font-size: 14px; }
+.pill {
+  display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 10px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+}
+
+/* Sections */
+main { min-width: 0; }
+section { padding-top: 44px; display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+h2 {
+  font-family: var(--font-display); font-weight: 650; font-size: 1.65rem; line-height: 1.2;
+  margin: 0; text-wrap: balance; display: flex; gap: 14px; align-items: baseline;
+}
+h2 .num { font-family: var(--font-mono); font-size: .9rem; color: var(--accent); font-weight: 500; }
+h3 { font-size: 1.02rem; font-weight: 600; margin: 12px 0 0; }
+p { margin: 0; max-width: 68ch; }
+ul.plain { margin: 0; padding-left: 1.2em; max-width: 68ch; display: flex; flex-direction: column; gap: 4px; }
+code { font-family: var(--font-mono); font-size: .86em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+pre.code {
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.55; background: var(--code-bg);
+  padding: 16px 18px; border-radius: 6px; overflow-x: auto; margin: 0;
+}
+
+/* Tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--code-bg); }
+td.method { font-family: var(--font-mono); font-weight: 500; color: var(--accent); white-space: nowrap; }
+
+/* Figures */
+figure.uml { margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); display: flex; flex-direction: column; }
+figure.uml .canvas { overflow-x: auto; padding: 20px; display: flex; justify-content: center; }
+figure.uml figcaption {
+  border-top: 1px solid var(--rule); padding: 10px 16px; font-size: 13px; color: var(--muted);
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+figure.uml figcaption b { color: var(--ink); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+
+/* Hand-drawn figures (inlined SVG, see references/diagrams.md) */
+figure.uml .canvas .sketch { display: block; width: 100%; height: auto; color: var(--ink); }
+.sketch text { font-family: "Kalam", "Segoe Print", "Comic Sans MS", cursive; }
+.sketch .sk-accent { stroke: var(--accent); }
+.sketch text.sk-accent { fill: var(--accent); stroke: none; }
+.sketch .sk-bg { fill: var(--surface); }
+.sketch .sk-fill { fill: var(--accent-soft); }
+
+/* Credits & sources */
+.credits ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 10px; max-width: 76ch; font-size: 14.5px; }
+.credits .note { display: block; color: var(--muted); font-size: 13px; }
+.credits a { color: var(--accent); }
+nav.toc li.credits-link a span { color: var(--muted); }
+
+/* GitHub links + contribute box */
+.links { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; font-weight: 600; }
+.links a { color: var(--accent); text-decoration: none; }
+.links a:hover, .links a:focus-visible { text-decoration: underline; }
+.contribute { border: 1px solid var(--rule); background: var(--surface); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.contribute .k { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* CoALA mapping strip */
+.pipeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.stage { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stage .k { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.stage .t { font-weight: 600; font-size: 14px; }
+.stage .d { font-size: 12.5px; color: var(--muted); }
+@media (max-width: 720px) { .pipeline { grid-template-columns: minmax(0, 1fr); } }
+
+blockquote.prompt {
+  margin: 0; padding: 14px 18px; border-left: 3px solid var(--accent); background: var(--surface);
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap; max-width: 76ch;
+}
+footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Sections">
+    <div class="label">Contents</div>
+    <ol>
+      <li><a href="#picture"><span>1</span>In one picture</a></li>
+      <li><a href="#why"><span>2</span>Why it matters</a></li>
+      <li><a href="#blocks"><span>3</span>Building blocks</a></li>
+      <li><a href="#how"><span>4</span>How it works</a></li>
+      <li><a href="#patterns"><span>5</span>Patterns</a></li>
+      <li><a href="#pitfalls"><span>6</span>Pitfalls</a></li>
+      <li><a href="#further"><span>7</span>Go further</a></li>
+      <li class="credits-link"><a href="#credits"><span>§</span>Credits &amp; sources</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="doc">
+      <div class="eyebrow">REFERENCE ARCHITECTURE · coala-cognitive-architecture · 17 Oct 2026</div>
+      <h1>CoALA: how language agents remember, decide and act</h1>
+      <p class="lede">A reference architecture for thinking about any LLM agent: three kinds of long-term memory, a working memory where the model reasons, an action space, and a decision cycle that ties them together. Explained with two diagrams and one worked example.</p>
+      <dl class="meta">
+        <div><dt>Domain</dt><dd>AI agents</dd></div>
+        <div><dt>Level</dt><dd><span class="pill">Beginner</span></dd></div>
+        <div><dt>Key concepts</dt><dd>working memory · semantic · episodic · procedural memory · internal vs external actions · decision cycle</dd></div>
+        <div><dt>Related demos</dt><dd><code>/demos/rag-demo</code></dd></div>
+      </dl>
+    </header>
+
+    <section id="picture">
+      <h2><span class="num">1</span>In one picture</h2>
+      <p><strong>CoALA</strong>, short for <em>Cognitive Architectures for Language Agents</em> (Sumers et al., 2023), is a way to describe any LLM agent with the same few parts. The language model is not the whole agent; it&#39;s the reasoning engine inside it. Around it sit <strong>memories</strong> that hold information, <strong>actions</strong> that move information or change the world, and a <strong>decision cycle</strong> that chooses what to do next.</p>
+<figure class="uml">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 470" role="img" aria-label="CoALA at a glance, adapted from Sumers et al. (2023): an agent is long-term memory (procedural, semantic, episodic), a working memory where the language model reasons, and an action space that is either internal (retrieval, reasoning, learning) or external (grounding in the world)." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<defs>
+<filter id="ffig01coalaataglance-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="31" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+<marker id="ffig01coalaataglance-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+<marker id="ffig01coalaataglance-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+</defs>
+<g filter="url(#ffig01coalaataglance-rough)">
+  <rect x="20" y="20" width="760" height="140" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="40" y="58" width="220" height="82" rx="6"/>
+  <rect x="290" y="58" width="220" height="82" rx="6"/>
+  <rect x="540" y="58" width="220" height="82" rx="6"/>
+  <rect x="220" y="220" width="360" height="96" rx="6" class="sk-accent sk-fill"/>
+  <path d="M150 140 L270 220" marker-end="url(#ffig01coalaataglance-arrow)"/>
+  <path d="M400 140 L400 220" class="sk-accent" marker-end="url(#ffig01coalaataglance-arrow-accent)"/>
+  <path d="M610 140 L520 220" marker-end="url(#ffig01coalaataglance-arrow)"/>
+  <path d="M560 226 L680 140" marker-end="url(#ffig01coalaataglance-arrow)"/>
+  <rect x="20" y="360" width="760" height="96" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="50" y="394" width="200" height="44" rx="6" class="sk-accent"/>
+  <rect x="300" y="394" width="200" height="44" rx="6"/>
+  <rect x="550" y="394" width="200" height="44" rx="6"/>
+  <path d="M300 316 L220 394" class="sk-accent" marker-end="url(#ffig01coalaataglance-arrow-accent)" marker-start="url(#ffig01coalaataglance-arrow-accent)"/>
+  <path d="M400 316 L400 394" marker-end="url(#ffig01coalaataglance-arrow)" marker-start="url(#ffig01coalaataglance-arrow)"/>
+  <path d="M510 316 L650 394" marker-end="url(#ffig01coalaataglance-arrow)" marker-start="url(#ffig01coalaataglance-arrow)"/>
+</g>
+<g fill="currentColor" stroke="none">
+  <text x="32" y="40" text-anchor="start" font-size="12" font-weight="700">Long-term memory</text>
+  <text x="150.0" y="96.0" text-anchor="middle">Procedural</text>
+  <text x="150.0" y="111.0" text-anchor="middle" font-size="11">how to act: prompts, code</text>
+  <text x="400.0" y="96.0" text-anchor="middle">Semantic</text>
+  <text x="400.0" y="111.0" text-anchor="middle" font-size="11">what is true: facts, docs</text>
+  <text x="650.0" y="96.0" text-anchor="middle">Episodic</text>
+  <text x="650.0" y="111.0" text-anchor="middle" font-size="11">what happened: past turns</text>
+  <text x="400.0" y="265.0" text-anchor="middle" class="sk-accent">Working memory</text>
+  <text x="400.0" y="280.0" text-anchor="middle" font-size="11">goal · context · scratchpad</text>
+  <text x="400" y="300" text-anchor="middle" font-size="11">the LLM reasons over this</text>
+  <rect class="sk-bg" x="170" y="174" width="33" height="17" rx="3"/>
+  <text x="186" y="186" text-anchor="middle" font-size="12">load</text>
+  <rect class="sk-bg" x="368" y="174" width="64" height="17" rx="3"/>
+  <text x="400" y="186" text-anchor="middle" class="sk-accent" font-size="12">retrieval</text>
+  <rect class="sk-bg" x="580" y="168" width="64" height="17" rx="3"/>
+  <text x="612" y="180" text-anchor="middle" font-size="12">retrieval</text>
+  <rect class="sk-bg" x="687" y="188" width="57" height="17" rx="3"/>
+  <text x="716" y="200" text-anchor="middle" font-size="12">learning</text>
+  <text x="32" y="380" text-anchor="start" font-size="12" font-weight="700">Action space · external (grounding)</text>
+  <text x="150.0" y="413.0" text-anchor="middle" class="sk-accent">Dialogue</text>
+  <text x="150.0" y="428.0" text-anchor="middle" font-size="11">talk to a person</text>
+  <text x="400.0" y="413.0" text-anchor="middle">Tools &amp; APIs</text>
+  <text x="400.0" y="428.0" text-anchor="middle" font-size="11">search, code, DBs</text>
+  <text x="650.0" y="413.0" text-anchor="middle">Environment</text>
+  <text x="650.0" y="428.0" text-anchor="middle" font-size="11">browser, robot, files</text>
+  <rect class="sk-bg" x="255" y="334" width="27" height="17" rx="3"/>
+  <text x="268" y="346" text-anchor="middle" class="sk-accent" font-size="12">act</text>
+  <rect class="sk-bg" x="417" y="340" width="27" height="17" rx="3"/>
+  <text x="430" y="352" text-anchor="middle" font-size="12">act</text>
+  <rect class="sk-bg" x="577" y="334" width="27" height="17" rx="3"/>
+  <text x="590" y="346" text-anchor="middle" font-size="12">act</text>
+</g>
+</svg></div>
+        <figcaption><b>Fig. 1</b> CoALA at a glance, adapted from Sumers et al. (2023): long-term memory, working memory and the action space.</figcaption>
+      </figure>
+<blockquote class="prompt" style="font-family:var(--font-body);font-size:15px"><strong>The key idea.</strong> If you can say which memory a component writes to, and which action reads from it, you can describe and compare any agent, from a 50-line RAG script to a multi-agent system.</blockquote>
+
+    </section>
+
+    <section id="why">
+      <h2><span class="num">2</span>Why it matters</h2>
+      <p>Agent frameworks use the same words for different things. &quot;Memory&quot; might mean the chat history, a vector database or a fine-tuned model. &quot;Planning&quot; might be one prompt or a search over many. Without shared vocabulary, two designs are hard to compare and gaps are hard to spot.</p>
+<p>CoALA gives each piece a role. Once every component has a role, three questions get easy:</p>
+<ul class="plain">
+<li><strong>What does this agent actually remember?</strong></li>
+<li><strong>What can it change?</strong> Only its own memory, or the outside world too?</li>
+<li><strong>Who decides what happens next?</strong> A fixed pipeline, or the model each turn?</li>
+</ul>
+
+    </section>
+
+    <section id="blocks">
+      <h2><span class="num">3</span>The building blocks</h2>
+      <p><strong>Working memory</strong> is what the model sees right now: the goal, the retrieved context, recent turns and any scratch work. In practice, it&#39;s the prompt. It&#39;s small and rebuilt every cycle.</p>
+<p><strong>Long-term memory</strong> comes in three kinds:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Memory</th>
+<th>Holds</th>
+<th>Everyday example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Semantic</td>
+<td>Facts about the world or a domain</td>
+<td>Documents in a vector store, a knowledge graph</td>
+</tr>
+<tr>
+<td>Episodic</td>
+<td>What happened before</td>
+<td>Past conversations, logs of earlier attempts</td>
+</tr>
+<tr>
+<td>Procedural</td>
+<td>How to act</td>
+<td>The system prompt, tool definitions, the agent&#39;s code, the model&#39;s weights</td>
+</tr>
+</tbody></table></div>
+<p><strong>Actions</strong> are either <em>internal</em>, working on the agent&#39;s own memories, or <em>external</em>, reaching outside it:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Kind</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Retrieval</td>
+<td>Internal</td>
+<td>Reads from long-term memory into working memory</td>
+</tr>
+<tr>
+<td>Reasoning</td>
+<td>Internal</td>
+<td>The LLM processes working memory and writes results back to it</td>
+</tr>
+<tr>
+<td>Learning</td>
+<td>Internal</td>
+<td>Writes to long-term memory: storing documents, saving an episode, updating a prompt</td>
+</tr>
+<tr>
+<td>Grounding</td>
+<td>External</td>
+<td>Talks to a person, calls a tool or API, acts in an environment</td>
+</tr>
+</tbody></table></div>
+<p><strong>The decision procedure</strong> is the loop that picks which action to take, described next.</p>
+
+    </section>
+
+    <section id="how">
+      <h2><span class="num">4</span>How it works</h2>
+      <p>Each cycle has two stages, <strong>planning</strong> and <strong>execution</strong>:</p>
+<ol class="plain">
+<li><strong>Propose.</strong> The model suggests candidate actions, often after retrieving context.</li>
+<li><strong>Evaluate.</strong> Each candidate is scored, by the model, by rules or by a value estimate.</li>
+<li><strong>Select.</strong> One action is chosen. Simple agents skip straight here: there&#39;s only one option.</li>
+<li><strong>Act.</strong> The chosen action runs: an internal one, like retrieving or learning, or an external one, like replying or calling a tool.</li>
+<li><strong>Observe.</strong> The result goes back into working memory, and the next cycle starts. The loop ends when the goal is met or a budget runs out.</li>
+</ol>
+<figure class="uml">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 300" role="img" aria-label="The CoALA decision cycle, adapted from Sumers et al. (2023): in planning the agent proposes candidate actions, evaluates them and selects one; in execution it performs the chosen internal or external action, observes the result, and the cycle repeats." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<defs>
+<filter id="ffig02decisioncycle-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="32" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+<marker id="ffig02decisioncycle-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+<marker id="ffig02decisioncycle-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+</defs>
+<g filter="url(#ffig02decisioncycle-rough)">
+  <rect x="20" y="30" width="470" height="120" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="40" y="70" width="130" height="56" rx="6" class="sk-accent"/>
+  <rect x="195" y="70" width="130" height="56" rx="6" class="sk-accent"/>
+  <rect x="350" y="70" width="120" height="56" rx="6"/>
+  <path d="M170 98 L195 98" class="sk-accent" marker-end="url(#ffig02decisioncycle-arrow-accent)"/>
+  <path d="M325 98 L350 98" marker-end="url(#ffig02decisioncycle-arrow)"/>
+  <rect x="530" y="30" width="230" height="120" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="550" y="70" width="190" height="56" rx="6"/>
+  <path d="M470 98 L550 98" marker-end="url(#ffig02decisioncycle-arrow)"/>
+  <rect x="550" y="200" width="190" height="56" rx="6"/>
+  <path d="M645 126 L645 200" marker-end="url(#ffig02decisioncycle-arrow)"/>
+  <path d="M550 228 L105 228 L105 126" class="sk-accent" marker-end="url(#ffig02decisioncycle-arrow-accent)"/>
+</g>
+<g fill="currentColor" stroke="none">
+  <text x="32" y="50" text-anchor="start" font-size="12" font-weight="700">Planning</text>
+  <text x="105.0" y="95.0" text-anchor="middle" class="sk-accent">Propose</text>
+  <text x="105.0" y="110.0" text-anchor="middle" font-size="11">candidate actions</text>
+  <text x="260.0" y="95.0" text-anchor="middle" class="sk-accent">Evaluate</text>
+  <text x="260.0" y="110.0" text-anchor="middle" font-size="11">score each one</text>
+  <text x="410.0" y="95.0" text-anchor="middle">Select</text>
+  <text x="410.0" y="110.0" text-anchor="middle" font-size="11">pick one</text>
+  <text x="542" y="50" text-anchor="start" font-size="12" font-weight="700">Execution</text>
+  <text x="645.0" y="95.0" text-anchor="middle">Act</text>
+  <text x="645.0" y="110.0" text-anchor="middle" font-size="11">internal or external</text>
+  <rect class="sk-bg" x="466" y="74" width="88" height="17" rx="3"/>
+  <text x="510" y="86" text-anchor="middle" font-size="12">chosen action</text>
+  <text x="645.0" y="225.0" text-anchor="middle">Observe</text>
+  <text x="645.0" y="240.0" text-anchor="middle" font-size="11">result → working memory</text>
+  <rect class="sk-bg" x="212" y="208" width="237" height="17" rx="3"/>
+  <text x="330" y="220" text-anchor="middle" class="sk-accent" font-size="12">next cycle (until done or budget hit)</text>
+</g>
+</svg></div>
+        <figcaption><b>Fig. 2</b> The decision cycle, adapted from Sumers et al. (2023): planning (propose → evaluate → select), then execution and observation.</figcaption>
+      </figure>
+<h3>A worked example: the RAG demo</h3>
+<p>A basic RAG chatbot is a small CoALA agent. Uploading a document is a <strong>learning</strong> action into <strong>semantic</strong> memory. Each question triggers a <strong>retrieval</strong> action that fills <strong>working memory</strong>, the model <strong>reasons</strong>, and the reply is a <strong>grounding</strong> action. Seen this way, what&#39;s missing is easy to spot: there&#39;s no episodic store (history lives only in the browser), and the agent never learns from conversations.</p>
+<figure class="uml">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" role="img" aria-label="The RAG demo mapped onto CoALA: upload is a learning action into semantic memory (pgvector), each question triggers a retrieval action into working memory (the prompt), the LLM reasons and replies; episodic memory exists only as client-side history." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<defs>
+<filter id="ffig03ragthroughcoala-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="33" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
+<marker id="ffig03ragthroughcoala-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+<marker id="ffig03ragthroughcoala-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
+</defs>
+<g filter="url(#ffig03ragthroughcoala-rough)">
+  <circle cx="50" cy="149" r="9"/>
+  <path d="M50 158 V184 M35 168 H65 M50 184 L38 202 M50 184 L62 202"/>
+  <rect x="150" y="40" width="170" height="56" rx="6"/>
+  <path class="sk-accent" d="M390 39 A95.0 9 0 0 0 580 39 A95.0 9 0 0 0 390 39 V101 A95.0 9 0 0 0 580 101 V39"/>
+  <rect x="150" y="170" width="170" height="56" rx="6"/>
+  <rect x="390" y="160" width="190" height="76" rx="6" class="sk-accent sk-fill"/>
+  <rect x="630" y="170" width="150" height="56" rx="6"/>
+  <path d="M76 160 L150 70" marker-end="url(#ffig03ragthroughcoala-arrow)"/>
+  <path d="M320 68 L390 68" marker-end="url(#ffig03ragthroughcoala-arrow)"/>
+  <path d="M76 190 L150 198" marker-end="url(#ffig03ragthroughcoala-arrow)"/>
+  <path d="M320 198 L390 198" marker-end="url(#ffig03ragthroughcoala-arrow)"/>
+  <path d="M485 110 L485 160" class="sk-accent" marker-end="url(#ffig03ragthroughcoala-arrow-accent)"/>
+  <path d="M580 198 L630 198" class="sk-accent" marker-end="url(#ffig03ragthroughcoala-arrow-accent)"/>
+  <path d="M705 226 L705 300 L60 300 L60 222" class="sk-accent" marker-end="url(#ffig03ragthroughcoala-arrow-accent)"/>
+  <rect x="150" y="246" width="170" height="34" rx="6" stroke-dasharray="4 4"/>
+</g>
+<g fill="currentColor" stroke="none">
+  <text x="50" y="220" text-anchor="middle">User</text>
+  <text x="235.0" y="65.0" text-anchor="middle">POST /upload</text>
+  <text x="235.0" y="80.0" text-anchor="middle" font-size="11">learning action</text>
+  <text x="485.0" y="72.0" text-anchor="middle">pgvector</text>
+  <text x="485.0" y="87.0" text-anchor="middle" font-size="11">semantic memory</text>
+  <text x="235.0" y="195.0" text-anchor="middle">POST /chat</text>
+  <text x="235.0" y="210.0" text-anchor="middle" font-size="11">question</text>
+  <text x="485.0" y="195.0" text-anchor="middle" class="sk-accent">Prompt</text>
+  <text x="485.0" y="210.0" text-anchor="middle" font-size="11">context + 6 turns</text>
+  <text x="485" y="228" text-anchor="middle" font-size="11">working memory</text>
+  <text x="705.0" y="195.0" text-anchor="middle">ChatOpenAI</text>
+  <text x="705.0" y="210.0" text-anchor="middle" font-size="11">reasoning</text>
+  <rect class="sk-bg" x="81" y="92" width="39" height="17" rx="3"/>
+  <text x="100" y="104" text-anchor="middle" font-size="12">files</text>
+  <rect class="sk-bg" x="311" y="44" width="88" height="17" rx="3"/>
+  <text x="355" y="56" text-anchor="middle" font-size="12">embed + store</text>
+  <rect class="sk-bg" x="483" y="128" width="113" height="17" rx="3"/>
+  <text x="540" y="140" text-anchor="middle" class="sk-accent" font-size="12">retrieval · top-4</text>
+  <rect class="sk-bg" x="293" y="280" width="175" height="17" rx="3"/>
+  <text x="380" y="292" text-anchor="middle" class="sk-accent" font-size="12">answer + sources (dialogue)</text>
+  <text x="235" y="268" text-anchor="middle" font-size="11">episodic: client only</text>
+</g>
+</svg></div>
+        <figcaption><b>Fig. 3</b> The RAG demo mapped onto CoALA: learning into semantic memory, retrieval into working memory, reasoning, then a reply. Episodic memory is only client-side.</figcaption>
+      </figure>
+
+    </section>
+
+    <section id="patterns">
+      <h2><span class="num">5</span>Patterns &amp; variations</h2>
+      <div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>What changes in CoALA terms</th>
+<th>When to use it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Plain RAG</td>
+<td>A fixed cycle: retrieve → reason → reply. No learning from chats</td>
+<td>Q&amp;A over a known body of documents</td>
+</tr>
+<tr>
+<td>ReAct (Yao et al., 2022)</td>
+<td>Reasoning and grounding alternate over several cycles; the model picks the next tool</td>
+<td>Tasks that need several lookups or tool calls</td>
+</tr>
+<tr>
+<td>Conversational memory</td>
+<td>Adds an episodic store and retrieval from it</td>
+<td>Assistants that should remember a user across sessions</td>
+</tr>
+<tr>
+<td>Reflection (Park et al., 2023)</td>
+<td>A learning action writes the agent&#39;s own conclusions into long-term memory</td>
+<td>Long-running agents that improve from experience</td>
+</tr>
+<tr>
+<td>Human-gated learning</td>
+<td>Learning writes to a review queue; a person promotes items to semantic memory</td>
+<td>Agents that speak for a person or a brand, where drift is unacceptable</td>
+</tr>
+</tbody></table></div>
+
+    </section>
+
+    <section id="pitfalls">
+      <h2><span class="num">6</span>Pitfalls</h2>
+      <div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Pitfall</th>
+<th>What you&#39;ll notice</th>
+<th>Remedy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Everything in working memory</td>
+<td>Prompts grow until they&#39;re slow, costly or truncated</td>
+<td>Move history to episodic memory and retrieve only what&#39;s relevant</td>
+</tr>
+<tr>
+<td>Unreviewed learning</td>
+<td>The agent &quot;remembers&quot; false or injected facts</td>
+<td>Gate writes to semantic memory; keep a review queue</td>
+</tr>
+<tr>
+<td>Unbounded decision loops</td>
+<td>Runaway tool calls and costs</td>
+<td>Cap the cycles and tokens; force a final answer at the cap</td>
+</tr>
+<tr>
+<td>Procedural memory edited ad hoc</td>
+<td>Behaviour changes nobody can trace</td>
+<td>Version prompts and tool definitions like code; record the version with each run</td>
+</tr>
+<tr>
+<td>Episodic and semantic mixed together</td>
+<td>Old chat snippets cited as facts</td>
+<td>Separate stores, labelled sources, different retrieval rules</td>
+</tr>
+</tbody></table></div>
+
+    </section>
+
+    <section id="further">
+      <h2><span class="num">7</span>Go further</h2>
+      <ul class="plain">
+<li><strong>See it built:</strong> the <a href="/demos/rag-demo">RAG demo</a> implements the agent in Fig. 3, with every stage visible in its UI.</li>
+<li><strong>Read the paper:</strong> Sumers et al. (2023), listed below, covers the framework in depth, including how it relates to classic cognitive architectures.</li>
+<li><strong>Next on this desk:</strong> explainers on agent harnesses and AI Ops will use the same vocabulary.</li>
+</ul>
+
+    </section>
+
+    <section id="credits" class="credits">
+      <h2>Credits &amp; sources</h2>
+      <ol>
+        <li>Theodore R. Sumers, Shunyu Yao, Karthik Narasimhan, Thomas L. Griffiths. <a href="https://arxiv.org/abs/2309.02427"><i>Cognitive Architectures for Language Agents</i></a> (2023). <span class="note">The framework this page explains: the memory modules, the internal and external action space and the decision cycle. Fig. 1 and Fig. 2 are simplified, redrawn adaptations of the paper's framework, not copies.</span></li>
+        <li>Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, Yuan Cao. <a href="https://arxiv.org/abs/2210.03629"><i>ReAct: Synergizing Reasoning and Acting in Language Models</i></a> (2022). <span class="note">The reason-then-act pattern in the Patterns table.</span></li>
+        <li>Joon Sung Park, Joseph C. O'Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, Michael S. Bernstein. <a href="https://arxiv.org/abs/2304.03442"><i>Generative Agents: Interactive Simulacra of Human Behavior</i></a> (2023). <span class="note">The reflection pattern, where an agent writes its own conclusions back into memory.</span></li>
+      </ol>
+    </section>
+
+    <footer>coala-cognitive-architecture · reference architecture · credits above.</footer>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- demo-doc template. Replace every {{SLOT}}. Keep the <style> block byte-for-byte: it IS the house format.
+     Figures: keep one <!-- figure: fig-NN-name.svg --> per figure (add/remove figures as needed, renumber),
+     then run: python3 -I scripts/figures.py inline <this file> docs/figures -->
+<title>{{SHORT_TITLE}}</title>
+<meta name="description" content="{{LEDE_PLAIN}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Kalam:wght@400;700&display=swap">
+<style>
+/* Layout: technical spec sheet. Sticky section index on the left (desktop), one reading column, diagrams in framed figures. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #5b6676;
+  --rule: #dde2e8;
+  --accent: #0f766e;
+  --accent-soft: #e3f2ef;
+  --code-bg: #eef1f4;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a1b0;
+    --rule: #2a333e; --accent: #4fd1c0; --accent-soft: #15302d; --code-bg: #1d2630;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a1b0;
+  --rule: #2a333e; --accent: #4fd1c0; --accent-soft: #15302d; --code-bg: #1d2630;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-block: 48px 96px;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 56px;
+}
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 28px 64px; }
+  nav.toc { position: static !important; }
+}
+
+/* Index */
+nav.toc {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 32px);
+  align-self: start;
+  font-size: 13.5px;
+}
+nav.toc .label {
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; margin-bottom: 10px;
+}
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; counter-reset: s; }
+nav.toc a {
+  display: flex; gap: 10px; padding: 4px 8px; margin-left: -8px; border-radius: 4px;
+  color: var(--muted); text-decoration: none;
+}
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--ink); background: var(--accent-soft); outline: none; }
+nav.toc a span { font-family: var(--font-mono); font-size: 12px; color: var(--accent); min-width: 1.4em; }
+@media (max-width: 860px) {
+  nav.toc ol { flex-direction: row; flex-wrap: wrap; gap: 4px 8px; }
+}
+
+/* Header */
+header.doc { display: flex; flex-direction: column; gap: 14px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--accent); letter-spacing: .04em; }
+h1 {
+  font-family: var(--font-display); font-weight: 650; font-size: clamp(2rem, 4.5vw, 2.9rem);
+  line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -.01em;
+}
+.lede { font-size: 1.1rem; color: var(--muted); max-width: 62ch; margin: 0; }
+dl.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px 24px; margin: 8px 0 0; }
+dl.meta div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+dl.meta dt { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+dl.meta dd { margin: 0; font-size: 14px; }
+.pill {
+  display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 10px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent);
+}
+
+/* Sections */
+main { min-width: 0; }
+section { padding-top: 44px; display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+h2 {
+  font-family: var(--font-display); font-weight: 650; font-size: 1.65rem; line-height: 1.2;
+  margin: 0; text-wrap: balance; display: flex; gap: 14px; align-items: baseline;
+}
+h2 .num { font-family: var(--font-mono); font-size: .9rem; color: var(--accent); font-weight: 500; }
+h3 { font-size: 1.02rem; font-weight: 600; margin: 12px 0 0; }
+p { margin: 0; max-width: 68ch; }
+ul.plain { margin: 0; padding-left: 1.2em; max-width: 68ch; display: flex; flex-direction: column; gap: 4px; }
+code { font-family: var(--font-mono); font-size: .86em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+pre.code {
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.55; background: var(--code-bg);
+  padding: 16px 18px; border-radius: 6px; overflow-x: auto; margin: 0;
+}
+
+/* Tables */
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--code-bg); }
+td.method { font-family: var(--font-mono); font-weight: 500; color: var(--accent); white-space: nowrap; }
+
+/* Figures */
+figure.uml { margin: 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); display: flex; flex-direction: column; }
+figure.uml .canvas { overflow-x: auto; padding: 20px; display: flex; justify-content: center; }
+figure.uml figcaption {
+  border-top: 1px solid var(--rule); padding: 10px 16px; font-size: 13px; color: var(--muted);
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+figure.uml figcaption b { color: var(--ink); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+
+/* Hand-drawn figures (inlined SVG, see references/diagrams.md) */
+figure.uml .canvas .sketch { display: block; width: 100%; height: auto; color: var(--ink); }
+.sketch text { font-family: "Kalam", "Segoe Print", "Comic Sans MS", cursive; }
+.sketch .sk-accent { stroke: var(--accent); }
+.sketch text.sk-accent { fill: var(--accent); stroke: none; }
+.sketch .sk-bg { fill: var(--surface); }
+.sketch .sk-fill { fill: var(--accent-soft); }
+
+/* Credits & sources */
+.credits ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 10px; max-width: 76ch; font-size: 14.5px; }
+.credits .note { display: block; color: var(--muted); font-size: 13px; }
+.credits a { color: var(--accent); }
+nav.toc li.credits-link a span { color: var(--muted); }
+
+/* GitHub links + contribute box */
+.links { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; font-weight: 600; }
+.links a { color: var(--accent); text-decoration: none; }
+.links a:hover, .links a:focus-visible { text-decoration: underline; }
+.contribute { border: 1px solid var(--rule); background: var(--surface); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.contribute .k { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* CoALA mapping strip */
+.pipeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.stage { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stage .k { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.stage .t { font-weight: 600; font-size: 14px; }
+.stage .d { font-size: 12.5px; color: var(--muted); }
+@media (max-width: 720px) { .pipeline { grid-template-columns: minmax(0, 1fr); } }
+
+blockquote.prompt {
+  margin: 0; padding: 14px 18px; border-left: 3px solid var(--accent); background: var(--surface);
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap; max-width: 76ch;
+}
+footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="Sections">
+    <div class="label">Contents</div>
+    <ol>
+      <li><a href="#purpose"><span>1</span>Purpose &amp; scope</a></li>
+      <li><a href="#usecases"><span>2</span>Use cases</a></li>
+      <li><a href="#architecture"><span>3</span>Architecture</a></li>
+      <li><a href="#flows"><span>4</span>Key flows</a></li>
+      <li><a href="#backend"><span>5</span>Backend</a></li>
+      <li><a href="#data"><span>6</span>Data model</a></li>
+      <li><a href="#frontend"><span>7</span>Frontend</a></li>
+      <li><a href="#structure"><span>8</span>Project layout</a></li>
+      <li><a href="#run"><span>9</span>Run &amp; verify</a></li>
+      <li><a href="#next"><span>10</span>Next steps</a></li>
+      <li class="credits-link"><a href="#credits"><span>§</span>Credits &amp; sources</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="doc">
+      <div class="eyebrow">DESIGN DOCUMENT · {{SLUG}}</div>
+      <h1>{{NAME}}: {{WHAT_IT_DOES}}</h1>
+      <p class="lede">{{LEDE}}</p>
+      <dl class="meta">
+        <div><dt>Stack</dt><dd>{{STACK · SEPARATED}}</dd></div>
+        <div><dt>Models</dt><dd><code>{{MODEL_1}}</code> · <code>{{MODEL_2}}</code></dd></div>
+        <div><dt>Date</dt><dd>{{DD Mon YYYY}}</dd></div>
+        <div><dt>Status</dt><dd><span class="pill">{{Draft | Approved | Approved · built}}</span></dd></div>
+      </dl>
+      <!-- GitHub links: derive all four from the repo URL. Delete this row if there is no repo yet. -->
+      <div class="links">
+        <a href="{{REPO_URL}}">View code ↗</a>
+        <a href="{{REPO_URL}}/fork">Fork ↗</a>
+        <a href="{{REPO_URL}}/issues/new">Report an issue ↗</a>
+        <a href="{{REPO_URL}}/blob/main/CONTRIBUTING.md">Contribute ↗</a>
+      </div>
+    </header>
+
+    <section id="purpose">
+      <h2><span class="num">1</span>Purpose &amp; scope</h2>
+      <p>{{PURPOSE — bold the CoALA terms with <b>…</b>}}</p>
+      <div class="pipeline" role="list">
+        <!-- Exactly 5 stages, in data-flow order -->
+        <div class="stage" role="listitem"><span class="k">{{code key}}</span><span class="t">{{2–4 word action}}</span><span class="d">{{CoALA role}}</span></div>
+        <div class="stage" role="listitem"><span class="k">{{code key}}</span><span class="t">{{action}}</span><span class="d">{{CoALA role}}</span></div>
+        <div class="stage" role="listitem"><span class="k">{{code key}}</span><span class="t">{{action}}</span><span class="d">{{CoALA role}}</span></div>
+        <div class="stage" role="listitem"><span class="k">{{code key}}</span><span class="t">{{action}}</span><span class="d">{{CoALA role}}</span></div>
+        <div class="stage" role="listitem"><span class="k">{{code key}}</span><span class="t">{{action}}</span><span class="d">{{CoALA role}}</span></div>
+      </div>
+      <h3>In scope</h3>
+      <ul class="plain">
+        <li>{{Verb-first capability}}</li>
+      </ul>
+      <h3>Out of scope</h3>
+      <p>{{Deliberately excluded items}}. Section 10 lists these as follow-ups.</p>
+    </section>
+
+    <section id="usecases">
+      <h2><span class="num">2</span>Use cases</h2>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-01-use-cases.svg --></div>
+        <figcaption><b>Fig. 1</b> Use case diagram: {{one line}}.</figcaption>
+      </figure>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Use case</th><th>Behaviour</th></tr></thead>
+        <tbody>
+          <tr><td>UC1</td><td>{{Use case}}</td><td>{{System behaviour}}</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="architecture">
+      <h2><span class="num">3</span>Architecture</h2>
+      <p>{{Runtime parts and what each owns}}</p>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-02-components.svg --></div>
+        <figcaption><b>Fig. 2</b> Component diagram: modules and their dependencies.</figcaption>
+      </figure>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-03-deployment.svg --></div>
+        <figcaption><b>Fig. 3</b> Deployment view for {{environment}}.</figcaption>
+      </figure>
+    </section>
+
+    <section id="flows">
+      <h2><span class="num">4</span>Key flows</h2>
+      <h3>4.1 {{Flow}}: {{a → b → c}}</h3>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-04-seq-flow.svg --></div>
+        <figcaption><b>Fig. 4</b> Sequence: {{flow}} (CoALA {{concept}}).</figcaption>
+      </figure>
+    </section>
+
+    <section id="backend">
+      <h2><span class="num">5</span>Backend design</h2>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-05-classes.svg --></div>
+        <figcaption><b>Fig. 5</b> Class diagram: {{modules and models}}.</figcaption>
+      </figure>
+      <div class="table-wrap"><table>
+        <thead><tr><th>File</th><th>Responsibility</th></tr></thead>
+        <tbody>
+          <tr><td><code>{{path}}</code></td><td>{{responsibility}}</td></tr>
+        </tbody>
+      </table></div>
+      <h3>System prompt</h3>
+      <blockquote class="prompt">{{VERBATIM SYSTEM PROMPT}}</blockquote>
+      <h3>API contract</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Method</th><th>Path</th><th>Request</th><th>Response</th></tr></thead>
+        <tbody>
+          <tr><td class="method">{{GET}}</td><td><code>{{/path}}</code></td><td>{{request}}</td><td><code>{{response}}</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>Errors: {{codes and causes}}.</p>
+    </section>
+
+    <section id="data">
+      <h2><span class="num">6</span>Data model</h2>
+      <p>{{Who creates the schema; what one row is}}</p>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-06-er.svg --></div>
+        <figcaption><b>Fig. 6</b> Entity-relationship diagram of {{store}}.</figcaption>
+      </figure>
+    </section>
+
+    <section id="frontend">
+      <h2><span class="num">7</span>Frontend design</h2>
+      <figure class="uml">
+        <div class="canvas"><!-- figure: fig-07-frontend.svg --></div>
+        <figcaption><b>Fig. 7</b> Frontend component tree.</figcaption>
+      </figure>
+      <ul class="plain">
+        <li>{{Rendering model}}</li>
+        <li>{{How it calls the API}}</li>
+        <li>{{The UX detail that makes the demo's point visible}}</li>
+      </ul>
+    </section>
+
+    <section id="structure">
+      <h2><span class="num">8</span>Project layout</h2>
+<pre class="code">{{slug}}/
+├── {{file}}        {{comment}}
+└── {{dir}}/</pre>
+    </section>
+
+    <section id="run">
+      <h2><span class="num">9</span>Run &amp; verify</h2>
+<pre class="code">git clone {{REPO_URL}}.git &amp;&amp; cd {{slug}}
+{{commands, one per line, with # comments}}</pre>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Check</th><th>Expected</th></tr></thead>
+        <tbody>
+          <tr><td>{{health check}}</td><td>{{expected}}</td></tr>
+          <tr><td>{{grounded question}}</td><td>{{answer + citation}}</td></tr>
+          <tr><td>{{out-of-scope question or bad input}}</td><td>{{refusal or 4xx}}</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="next">
+      <h2><span class="num">10</span>Next steps</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Idea</th><th>What it teaches</th></tr></thead>
+        <tbody>
+          <tr><td>{{idea}}</td><td>{{lesson, naming the CoALA concept if any}}</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Contribute</h3>
+      <div class="contribute">
+        <span class="k">Build on this demo</span>
+        <p>Fork the repo, pick an idea from the table above, and open a pull request. Bugs and unclear steps go in issues.</p>
+        <pre class="code">git clone {{REPO_URL}}.git</pre>
+        <div class="links">
+          <a href="{{REPO_URL}}/fork">Fork on GitHub ↗</a>
+          <a href="{{REPO_URL}}/issues/new">Report an issue ↗</a>
+          <a href="{{REPO_URL}}/blob/main/CONTRIBUTING.md">How to contribute ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="credits" class="credits">
+      <h2>Credits &amp; sources</h2>
+      <ol>
+        <li>{{Authors}}. <a href="{{verified URL}}"><i>{{Title}}</i></a> ({{Year}}). <span class="note">{{What this demo takes from it.}}</span></li>
+      </ol>
+    </section>
+
+    <footer>{{slug}} · design document · source of truth: <code>docs/DESIGN.md</code> in the <a href="{{REPO_URL}}">repository</a> · <a href="{{REPO_URL}}/fork">fork it</a>.</footer>
+  </main>
+</div>
+
+</body>
+</html>

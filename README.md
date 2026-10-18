@@ -10,6 +10,8 @@ A small, growing collection of [Claude Skills](https://docs.claude.com/en/docs/c
 |---|---|
 | [`market-teardown/`](market-teardown/) | Turn your research on any market, product, or startup idea into a data-dense, verdict-driven teardown article (~1,500 words) plus a companion feed post. |
 | [`linkedin-tech-carousel/`](linkedin-tech-carousel/) | Turn one technical topic into a 3-slide LinkedIn carousel — hook, mechanism, payoff — delivered as a swipeable PDF plus PNGs and ready-to-paste post copy. |
+| [`demo-doc/`](demo-doc/) | Write a demo's design document in one house format — 10 numbered sections, a CoALA pipeline strip, hand-drawn SVG figures and fork/contribute links — as `DESIGN.md`, a styled HTML page and a website MDX post. |
+| [`arch-doc/`](arch-doc/) | Explain a reference architecture as a concept ("what is an agent harness?") — 7 tutorial-style sections, 2–3 hand-drawn diagrams, links to demos that implement it, and a mandatory Credits & sources list that gives credit to the original sources. |
 
 More skills will be added over time. See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to propose one.
 
