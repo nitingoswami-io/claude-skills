@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>RAG Demo</title>
-<meta name="description" content="A minimal web app that shows semantic Retrieval-Augmented Generation end to end. Each stage, from chunking to grounded answers, is visible in the UI and maps to the CoALA framework.">
+<meta name="description" content="A minimal web app that shows semantic Retrieval-Augmented Generation end to end. Pick a knowledge base (HR policies, a lease, a router manual), ask a question, and see the passages, similarity scores and database rows behind every answer. Each stage maps to the CoALA framework.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Kalam:wght@400;700&display=swap">
@@ -193,8 +193,8 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
   <main>
     <header class="doc">
       <div class="eyebrow">DESIGN DOCUMENT · rag-demo</div>
-      <h1>RAG Demo: upload documents, chat with them</h1>
-      <p class="lede">A minimal web app that shows semantic Retrieval-Augmented Generation end to end. Each stage, from chunking to grounded answers, is visible in the UI and maps to the CoALA framework.</p>
+      <h1>RAG Demo: ask real-world documents, see the evidence</h1>
+      <p class="lede">A minimal web app that shows semantic Retrieval-Augmented Generation end to end. Pick a knowledge base (HR policies, a lease, a router manual), ask a question, and see the passages, similarity scores and database rows behind every answer. Each stage maps to the CoALA framework.</p>
       <dl class="meta">
         <div><dt>Stack</dt><dd>FastAPI · LangChain · pgvector · Next.js</dd></div>
         <div><dt>Models</dt><dd><code>gpt-4o-mini</code> · <code>text-embedding-3-small</code></dd></div>
@@ -213,28 +213,55 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
       <h2><span class="num">1</span>Purpose &amp; scope</h2>
       <p>The app is a learning tool. The ingestion pipeline fills a long-term <strong>semantic memory</strong> (pgvector). Each chat turn runs a <strong>retrieval action</strong> that copies the most relevant chunks into the model&#39;s <strong>working memory</strong> (the prompt).</p>
 <div class="pipeline" role="list">
-        <div class="stage" role="listitem"><span class="k">POST /upload</span><span class="t">Chunk · embed · store</span><span class="d">CoALA learning action</span></div>
+        <div class="stage" role="listitem"><span class="k">samples.seed()</span><span class="t">Chunk · embed · store</span><span class="d">CoALA learning action</span></div>
         <div class="stage" role="listitem"><span class="k">pgvector</span><span class="t">Vector collection</span><span class="d">Semantic memory (long-term)</span></div>
-        <div class="stage" role="listitem"><span class="k">similarity_search</span><span class="t">Top-4 chunks</span><span class="d">Retrieval action</span></div>
+        <div class="stage" role="listitem"><span class="k">similarity_search</span><span class="t">Top-4 chunks in one pack</span><span class="d">Retrieval action</span></div>
         <div class="stage" role="listitem"><span class="k">ChatPromptTemplate</span><span class="t">Context + history</span><span class="d">Working memory</span></div>
         <div class="stage" role="listitem"><span class="k">ChatOpenAI</span><span class="t">Grounded answer</span><span class="d">Reasoning → external action</span></div>
       </div>
 <h3>In scope</h3>
 <ul class="plain">
-<li>Upload <code>.pdf</code>, <code>.txt</code> and <code>.md</code> files and index them into pgvector.</li>
-<li>List the indexed documents.</li>
-<li>A chat agent that answers only from the documents and shows its sources (file, page, snippet).</li>
-<li>Short chat history, kept on the client and sent with each request.</li>
+<li>Three sample knowledge bases (&quot;packs&quot;) of fictional documents, indexed at startup: HR &amp; Policies, Contracts &amp; Legal, and Customer Support.</li>
+<li>A chat agent that searches only the selected pack, answers only from it, and cites its sources.</li>
+<li>Evidence views: the pipeline steps with timings and tokens, a sources table (document, page, chunk, similarity, cited), and a read-only view of the pgvector rows.</li>
+<li>Short chat history per pack, kept on the client and sent with each request.</li>
+<li>Local mode only (<code>ALLOW_UPLOADS=true</code>): upload <code>.pdf</code>, <code>.txt</code> and <code>.md</code> files, de-duplicate re-uploads, and delete documents.</li>
 </ul>
+<h3>Demo safety and privacy</h3>
+<p>Uploads are off by default, so visitors can&#39;t store anything and there is no user data to protect. Sample documents are read-only, and uploads can&#39;t reuse a sample filename. <code>/chat</code> is rate-limited to 20 requests per minute per IP, which caps OpenAI spend. Request sizes are limited too: a message can be up to 1,000 characters and the history up to 20 turns. Question text and the retrieved passages are sent to OpenAI to generate the answer.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Demo mode (default)</th>
+<th>Local mode (<code>ALLOW_UPLOADS=true</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Sample knowledge bases</td>
+<td>Read-only</td>
+<td>Read-only</td>
+</tr>
+<tr>
+<td>Upload and delete your own files</td>
+<td>Disabled (<code>403</code>)</td>
+<td>Yes, in a shared &quot;Your documents&quot; set</td>
+</tr>
+<tr>
+<td>Limits</td>
+<td>20 chats per minute per IP</td>
+<td>Also 5 files and 5 MB per upload, 10 uploads per minute</td>
+</tr>
+</tbody></table></div>
 <h3>Out of scope</h3>
-<p>Authentication, multi-user isolation, streaming, document deletion, reranking, hybrid search and production deployment. Section 10 lists these as follow-ups.</p>
+<p>Authentication, per-user upload isolation, streaming, reranking, hybrid search and production deployment. Section 10 lists these as follow-ups.</p>
 
     </section>
 
     <section id="usecases">
       <h2><span class="num">2</span>Use cases</h2>
       <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" role="img" aria-label="Use case diagram: one user, four use cases inside the RAG demo app, and the OpenAI API as the external system used for embeddings and chat." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 330" role="img" aria-label="Use case diagram: a visitor picks a knowledge base, asks questions and inspects the evidence behind each answer; uploading documents is available only in local mode. Questions and uploads use the OpenAI API." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig01usecases-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig01usecases-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
@@ -246,32 +273,32 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
   <rect x="150" y="20" width="330" height="296" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
   <ellipse cx="315" cy="80" rx="120" ry="22"/>
   <path d="M82 160 L193 80"/>
-  <ellipse cx="315" cy="140" rx="120" ry="22"/>
-  <path d="M82 160 L193 140"/>
-  <ellipse cx="315" cy="200" rx="120" ry="22" class="sk-accent"/>
-  <path d="M82 160 L193 200" class="sk-accent"/>
+  <ellipse cx="315" cy="140" rx="120" ry="22" class="sk-accent"/>
+  <path d="M82 160 L193 140" class="sk-accent"/>
+  <ellipse cx="315" cy="200" rx="120" ry="22"/>
+  <path d="M82 160 L193 200"/>
   <ellipse cx="315" cy="260" rx="120" ry="22"/>
   <path d="M82 160 L193 260"/>
-  <rect x="590" y="120" width="140" height="56" rx="6"/>
-  <rect x="594" y="124" width="132" height="48" rx="3"/>
-  <path d="M436 80 L590 134" stroke-dasharray="6 5" marker-end="url(#ffig01usecases-arrow)"/>
-  <path d="M436 200 L590 164" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig01usecases-arrow-accent)"/>
+  <rect x="610" y="124" width="140" height="56" rx="6"/>
+  <rect x="614" y="128" width="132" height="48" rx="3"/>
+  <path d="M436 140 L610 146" class="sk-accent" marker-end="url(#ffig01usecases-arrow-accent)"/>
+  <path d="M436 260 L610 168" stroke-dasharray="6 5" marker-end="url(#ffig01usecases-arrow)"/>
 </g>
 <g fill="currentColor" stroke="none">
-  <text x="60" y="200" text-anchor="middle">User</text>
+  <text x="60" y="200" text-anchor="middle">Visitor</text>
   <text x="162" y="40" text-anchor="start" font-size="12" font-weight="700">RAG Demo App</text>
-  <text x="315" y="84" text-anchor="middle">Upload documents</text>
-  <text x="315" y="144" text-anchor="middle">View indexed documents</text>
-  <text x="315" y="204" text-anchor="middle" class="sk-accent">Ask a question</text>
-  <text x="315" y="264" text-anchor="middle">Inspect answer sources</text>
-  <text x="660.0" y="152.0" text-anchor="middle">OpenAI API</text>
-  <rect class="sk-bg" x="513" y="86" width="70" height="17" rx="3"/>
-  <text x="548" y="98" text-anchor="middle" font-size="12">embeddings</text>
-  <rect class="sk-bg" x="491" y="194" width="113" height="17" rx="3"/>
-  <text x="548" y="206" text-anchor="middle" class="sk-accent" font-size="12">embeddings + chat</text>
+  <text x="315" y="84" text-anchor="middle">Pick a knowledge base</text>
+  <text x="315" y="144" text-anchor="middle" class="sk-accent">Ask a question</text>
+  <text x="315" y="204" text-anchor="middle">Inspect evidence</text>
+  <text x="315" y="264" text-anchor="middle">Upload docs (local mode)</text>
+  <text x="680.0" y="156.0" text-anchor="middle">OpenAI API</text>
+  <rect class="sk-bg" x="473" y="120" width="113" height="17" rx="3"/>
+  <text x="530" y="132" text-anchor="middle" class="sk-accent" font-size="12">embeddings + chat</text>
+  <rect class="sk-bg" x="505" y="224" width="70" height="17" rx="3"/>
+  <text x="540" y="236" text-anchor="middle" font-size="12">embeddings</text>
 </g>
 </svg></div>
-        <figcaption><b>Fig. 1</b> Use case diagram: one actor, four use cases, one external system.</figcaption>
+        <figcaption><b>Fig. 1</b> Use case diagram: a visitor picks a knowledge base, asks, and inspects the evidence; uploads are local-mode only.</figcaption>
       </figure>
 <div class="table-wrap"><table>
 <thead>
@@ -283,23 +310,23 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
 </thead>
 <tbody><tr>
 <td>UC1</td>
-<td>Upload documents</td>
-<td>The user picks files. The system chunks, embeds and stores them, then shows how many chunks were indexed per file.</td>
+<td>Upload documents (local mode)</td>
+<td>The user picks files. The system chunks, embeds and stores them, then shows how many chunks were indexed per file. Re-uploading the same file is skipped; a changed file with the same name replaces its old chunks.</td>
 </tr>
 <tr>
 <td>UC2</td>
-<td>View indexed documents</td>
-<td>Lists the distinct source filenames in the vector store.</td>
+<td>Pick a knowledge base</td>
+<td>Shows each pack&#39;s problem, value and documents (chunk and page counts). In local mode, uploaded documents can be deleted, which removes their chunks and embeddings from pgvector.</td>
 </tr>
 <tr>
 <td>UC3</td>
 <td>Ask a question</td>
-<td>Retrieves the top-4 chunks. The LLM answers from them only, or replies &quot;I don&#39;t know based on the uploaded documents.&quot;</td>
+<td>Retrieves the top-4 chunks from the selected pack. The LLM answers from them only, or replies &quot;I don&#39;t know based on the uploaded documents.&quot;</td>
 </tr>
 <tr>
 <td>UC4</td>
-<td>Inspect sources</td>
-<td>Each answer lists the chunks it used (file, page, snippet), so retrieval is visible.</td>
+<td>Inspect evidence</td>
+<td>Clicking an answer shows its pipeline timings, a sources table with similarity scores and cited flags, and the matching rows in the pgvector table.</td>
 </tr>
 </tbody></table></div>
 
@@ -309,66 +336,82 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
       <h2><span class="num">3</span>Architecture</h2>
       <p>The system has three runtime parts: a Next.js client, a FastAPI service that owns all LangChain logic, and Postgres with the pgvector extension. OpenAI provides the embedding and chat models.</p>
 <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-label="Component diagram: the Next.js browser app calls three FastAPI routes; ingest.py and rag.py both go through vectorstore.py to reach pgvector and OpenAI. The chat path is highlighted." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 440" role="img" aria-label="Component diagram: the Next.js panels call FastAPI routes; at startup samples.py indexes the sample packs through ingest.py; ingest.py and rag.py reach pgvector through vectorstore.py, and OpenAI for embeddings and chat. The chat path is highlighted." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig02components-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig02components-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 <marker id="ffig02components-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 </defs>
 <g filter="url(#ffig02components-rough)">
-  <rect x="16" y="30" width="210" height="300" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
-  <rect x="46" y="74" width="150" height="38" rx="6"/>
-  <rect x="46" y="170" width="150" height="38" rx="6"/>
-  <rect x="46" y="260" width="150" height="38" rx="6" class="sk-accent"/>
-  <path d="M121 112 L121 170" marker-end="url(#ffig02components-arrow)"/>
-  <path d="M46 93 L32 93 L32 279 L46 279" marker-end="url(#ffig02components-arrow)"/>
-  <rect x="290" y="30" width="250" height="370" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
-  <rect x="320" y="74" width="190" height="38" rx="6"/>
-  <rect x="310" y="160" width="100" height="38" rx="6"/>
-  <rect x="420" y="160" width="100" height="38" rx="6" class="sk-accent"/>
-  <rect x="320" y="250" width="190" height="38" rx="6" class="sk-accent"/>
-  <rect x="320" y="336" width="190" height="38" rx="6"/>
-  <path d="M380 112 L360 160" marker-end="url(#ffig02components-arrow)"/>
-  <path d="M450 112 L470 160" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
-  <path d="M360 198 L385 250" marker-end="url(#ffig02components-arrow)"/>
-  <path d="M470 198 L445 250" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
-  <path d="M415 288 L415 336" marker-end="url(#ffig02components-arrow)"/>
-  <path d="M196 189 L320 98" marker-end="url(#ffig02components-arrow)"/>
-  <path d="M196 279 L320 104" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
-  <rect x="612" y="64" width="160" height="52" rx="6"/>
-  <rect x="616" y="68" width="152" height="44" rx="3"/>
-  <path class="sk-accent" d="M612 245 A80.0 9 0 0 0 772 245 A80.0 9 0 0 0 612 245 V305 A80.0 9 0 0 0 772 305 V245"/>
-  <path d="M510 268 L612 272" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
-  <path d="M500 250 L630 116" marker-end="url(#ffig02components-arrow)"/>
-  <path d="M520 168 L612 98" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
+  <rect x="16" y="30" width="230" height="390" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="46" y="60" width="170" height="38" rx="6"/>
+  <rect x="46" y="140" width="170" height="38" rx="6"/>
+  <path d="M46 79 L30 79 L30 159 L46 159" marker-end="url(#ffig02components-arrow)"/>
+  <rect x="46" y="220" width="170" height="38" rx="6" class="sk-accent"/>
+  <path d="M46 79 L30 79 L30 239 L46 239" marker-end="url(#ffig02components-arrow)"/>
+  <rect x="46" y="300" width="170" height="38" rx="6"/>
+  <path d="M46 79 L30 79 L30 319 L46 319" marker-end="url(#ffig02components-arrow)"/>
+  <rect x="46" y="370" width="170" height="38" rx="6"/>
+  <path d="M46 79 L30 79 L30 389 L46 389" marker-end="url(#ffig02components-arrow)"/>
+  <rect x="420" y="30" width="280" height="390" rx="10" stroke-dasharray="7 5" stroke-width="1.2"/>
+  <rect x="440" y="70" width="230" height="38" rx="6"/>
+  <rect x="440" y="150" width="100" height="38" rx="6"/>
+  <rect x="570" y="150" width="100" height="38" rx="6" class="sk-accent"/>
+  <rect x="440" y="250" width="90" height="38" rx="6"/>
+  <rect x="540" y="250" width="130" height="38" rx="6" class="sk-accent"/>
+  <rect x="440" y="350" width="230" height="38" rx="6"/>
+  <path d="M490 108 L490 150" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M620 108 L620 150" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
+  <path d="M555 108 L555 250" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M525 188 L546 250" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M620 188 L620 250" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
+  <path d="M470 250 L470 188" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M440 96 L428 96 L428 276 L440 276" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M555 288 L555 350" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M216 159 L440 80" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M216 239 L440 92" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
+  <path d="M216 319 L440 104" marker-end="url(#ffig02components-arrow)"/>
+  <rect x="760" y="64" width="160" height="52" rx="6"/>
+  <rect x="764" y="68" width="152" height="44" rx="3"/>
+  <path class="sk-accent" d="M760 245 A80.0 9 0 0 0 920 245 A80.0 9 0 0 0 760 245 V305 A80.0 9 0 0 0 920 305 V245"/>
+  <path d="M670 269 L760 272" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
+  <path d="M650 250 L780 116" marker-end="url(#ffig02components-arrow)"/>
+  <path d="M670 165 L760 100" class="sk-accent" marker-end="url(#ffig02components-arrow-accent)"/>
 </g>
 <g fill="currentColor" stroke="none">
   <text x="28" y="50" text-anchor="start" font-size="12" font-weight="700">Browser · Next.js :3000</text>
-  <text x="121.0" y="97.0" text-anchor="middle">page.tsx</text>
-  <text x="121.0" y="193.0" text-anchor="middle">UploadPanel.tsx</text>
-  <text x="121.0" y="283.0" text-anchor="middle" class="sk-accent">ChatPanel.tsx</text>
-  <text x="302" y="50" text-anchor="start" font-size="12" font-weight="700">FastAPI · :8000</text>
-  <text x="415.0" y="97.0" text-anchor="middle">main.py</text>
-  <text x="360.0" y="183.0" text-anchor="middle">ingest.py</text>
-  <text x="470.0" y="183.0" text-anchor="middle" class="sk-accent">rag.py</text>
-  <text x="415.0" y="273.0" text-anchor="middle" class="sk-accent">vectorstore.py</text>
-  <text x="415.0" y="359.0" text-anchor="middle">config.py</text>
-  <rect class="sk-bg" x="156" y="116" width="187" height="17" rx="3"/>
-  <text x="250" y="128" text-anchor="middle" font-size="12">POST /upload · GET /documents</text>
-  <rect class="sk-bg" x="209" y="234" width="70" height="17" rx="3"/>
-  <text x="244" y="246" text-anchor="middle" class="sk-accent" font-size="12">POST /chat</text>
-  <text x="692.0" y="94.0" text-anchor="middle">OpenAI API</text>
-  <text x="692.0" y="277.0" text-anchor="middle">Postgres 16</text>
-  <text x="692.0" y="292.0" text-anchor="middle" font-size="11">+ pgvector</text>
-  <rect class="sk-bg" x="497" y="246" width="126" height="17" rx="3"/>
-  <text x="560" y="258" text-anchor="middle" class="sk-accent" font-size="12">SQL + vector search</text>
-  <rect class="sk-bg" x="569" y="158" width="39" height="17" rx="3"/>
-  <text x="588" y="170" text-anchor="middle" font-size="12">embed</text>
-  <rect class="sk-bg" x="510" y="106" width="101" height="17" rx="3"/>
-  <text x="560" y="118" text-anchor="middle" class="sk-accent" font-size="12">chat completion</text>
+  <text x="131.0" y="83.0" text-anchor="middle">page.tsx</text>
+  <text x="131.0" y="163.0" text-anchor="middle">KnowledgeBase.tsx</text>
+  <text x="131.0" y="243.0" text-anchor="middle" class="sk-accent">ChatPanel.tsx</text>
+  <text x="131.0" y="323.0" text-anchor="middle">EvidencePanel.tsx</text>
+  <text x="131.0" y="393.0" text-anchor="middle">InsightPanel.tsx</text>
+  <text x="432" y="50" text-anchor="start" font-size="12" font-weight="700">FastAPI · :8000</text>
+  <text x="555.0" y="93.0" text-anchor="middle">main.py</text>
+  <text x="490.0" y="173.0" text-anchor="middle">ingest.py</text>
+  <text x="620.0" y="173.0" text-anchor="middle" class="sk-accent">rag.py</text>
+  <text x="485.0" y="273.0" text-anchor="middle">samples.py</text>
+  <text x="605.0" y="273.0" text-anchor="middle" class="sk-accent">vectorstore.py</text>
+  <text x="555.0" y="373.0" text-anchor="middle">config.py</text>
+  <rect class="sk-bg" x="402" y="214" width="51" height="17" rx="3"/>
+  <text x="428" y="226" text-anchor="middle" font-size="12">startup</text>
+  <rect class="sk-bg" x="239" y="115" width="132" height="17" rx="3"/>
+  <text x="305" y="127" text-anchor="middle" font-size="12">GET /packs · /upload</text>
+  <rect class="sk-bg" x="270" y="168" width="70" height="17" rx="3"/>
+  <text x="305" y="180" text-anchor="middle" class="sk-accent" font-size="12">POST /chat</text>
+  <rect class="sk-bg" x="239" y="221" width="132" height="17" rx="3"/>
+  <text x="305" y="233" text-anchor="middle" font-size="12">GET /packs/{id}/rows</text>
+  <text x="840.0" y="94.0" text-anchor="middle">OpenAI API</text>
+  <text x="840.0" y="277.0" text-anchor="middle">Postgres 16</text>
+  <text x="840.0" y="292.0" text-anchor="middle" font-size="11">+ pgvector</text>
+  <rect class="sk-bg" x="652" y="246" width="126" height="17" rx="3"/>
+  <text x="715" y="258" text-anchor="middle" class="sk-accent" font-size="12">SQL + vector search</text>
+  <rect class="sk-bg" x="719" y="168" width="39" height="17" rx="3"/>
+  <text x="738" y="180" text-anchor="middle" font-size="12">embed</text>
+  <rect class="sk-bg" x="658" y="108" width="101" height="17" rx="3"/>
+  <text x="708" y="120" text-anchor="middle" class="sk-accent" font-size="12">chat completion</text>
 </g>
 </svg></div>
-        <figcaption><b>Fig. 2</b> Component diagram: modules and their dependencies.</figcaption>
+        <figcaption><b>Fig. 2</b> Component diagram: the panels, the FastAPI modules, and the chat path to pgvector and OpenAI.</figcaption>
       </figure>
 <figure class="uml">
         <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270" role="img" aria-label="Deployment view: on the developer machine, next dev and uvicorn run as local processes and Postgres with pgvector runs in Docker; only the backend talks to api.openai.com over HTTPS." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -414,87 +457,69 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
 
     <section id="flows">
       <h2><span class="num">4</span>Key flows</h2>
-      <h3>4.1 Ingestion: upload → chunk → embed → store</h3>
+      <h3>4.1 Ingestion: hash → chunk → embed → store</h3>
+<p>At startup the backend indexes every sample file; in local mode, uploads take the same path. A file whose hash is already stored in that pack is skipped, so restarts are cheap, and a changed file replaces its old chunks only after the new ones are stored.</p>
 <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 826.0 596" role="img" aria-label="Sequence diagram of ingestion: each uploaded file is validated, loaded, split into 1000-character chunks, embedded and inserted into pgvector, and the UI then lists the indexed documents." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 571.7 506" role="img" aria-label="Sequence diagram of ingestion: at startup (and for uploads in local mode) each file is hashed; an unchanged file is skipped, otherwise it is loaded, split into 1000-character chunks, embedded, stored in pgvector, and any older version is deleted." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig04seqingest-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig04seqingest-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 <marker id="ffig04seqingest-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 </defs>
 <g filter="url(#ffig04seqingest-rough)">
-  <circle cx="70.0" cy="19" r="9"/>
-  <path d="M70.0 28 V54 M55.0 38 H85.0 M70.0 54 L58.0 72 M70.0 54 L82.0 72"/>
-  <path d="M70.0 76 V580" stroke-dasharray="3 6" stroke-width="1"/>
-  <rect x="161.35" y="24" width="91.7" height="34" rx="6"/>
-  <path d="M207.2 58 V580" stroke-dasharray="3 6" stroke-width="1"/>
-  <rect x="285.15" y="24" width="118.5" height="34" rx="6"/>
-  <path d="M344.4 58 V580" stroke-dasharray="3 6" stroke-width="1"/>
-  <rect x="439.59999999999997" y="24" width="84" height="34" rx="6"/>
-  <path d="M481.59999999999997 58 V580" stroke-dasharray="3 6" stroke-width="1"/>
-  <rect x="556.1999999999999" y="24" width="125.2" height="34" rx="6"/>
-  <path d="M618.8 58 V580" stroke-dasharray="3 6" stroke-width="1"/>
-  <rect x="714.0" y="24" width="84" height="34" rx="6"/>
-  <path d="M756.0 58 V580" stroke-dasharray="3 6" stroke-width="1"/>
-  <path d="M74.0 116 L203.2 116" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M211.2 146 L340.4 146" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M344.4 170 L370.4 170 L370.4 182 L347.4 182" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M348.4 206 L477.59999999999997 206" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M481.59999999999997 230 L507.59999999999997 230 L507.59999999999997 242 L484.59999999999997 242" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M481.59999999999997 260 L507.59999999999997 260 L507.59999999999997 272 L484.59999999999997 272" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M481.59999999999997 290 L507.59999999999997 290 L507.59999999999997 302 L484.59999999999997 302" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M485.59999999999997 326 L614.8 326" class="sk-accent" marker-end="url(#ffig04seqingest-arrow-accent)"/>
-  <path d="M614.8 356 L485.59999999999997 356" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow-accent)"/>
-  <path d="M485.59999999999997 386 L752.0 386" class="sk-accent" marker-end="url(#ffig04seqingest-arrow-accent)"/>
-  <path d="M477.59999999999997 416 L348.4 416" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M340.4 446 L211.2 446" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M211.2 476 L340.4 476" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M340.4 506 L211.2 506" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow)"/>
-  <path d="M203.2 536 L74.0 536" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow)"/>
-  <rect x="138.6" y="156" width="647.4" height="272" rx="4" stroke-width="1.1" stroke-dasharray="2 4"/>
+  <rect x="4.049999999999997" y="24" width="131.9" height="34" rx="6"/>
+  <path d="M70.0 58 V490" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="171.9" y="24" width="84" height="34" rx="6"/>
+  <path d="M213.9 58 V490" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="295.2" y="24" width="125.2" height="34" rx="6"/>
+  <path d="M357.8 58 V490" stroke-dasharray="3 6" stroke-width="1"/>
+  <rect x="459.70000000000005" y="24" width="84" height="34" rx="6"/>
+  <path d="M501.70000000000005 58 V490" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M74.0 116 L209.9 116" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M213.9 140 L239.9 140 L239.9 152 L216.9 152" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M217.9 176 L497.70000000000005 176" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M497.70000000000005 206 L217.9 206" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M213.9 230 L239.9 230 L239.9 242 L216.9 242" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M213.9 260 L239.9 260 L239.9 272 L216.9 272" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M213.9 290 L239.9 290 L239.9 302 L216.9 302" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M217.9 326 L353.8 326" class="sk-accent" marker-end="url(#ffig04seqingest-arrow-accent)"/>
+  <path d="M353.8 356 L217.9 356" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow-accent)"/>
+  <path d="M217.9 386 L497.70000000000005 386" class="sk-accent" marker-end="url(#ffig04seqingest-arrow-accent)"/>
+  <path d="M217.9 416 L497.70000000000005 416" marker-end="url(#ffig04seqingest-arrow)"/>
+  <path d="M209.9 446 L74.0 446" stroke-dasharray="6 5" marker-end="url(#ffig04seqingest-arrow)"/>
 </g>
 <g fill="currentColor" stroke="none">
-  <text x="70.0" y="90" text-anchor="middle">User</text>
-  <text x="207.2" y="45.0" text-anchor="middle">UploadPanel</text>
-  <text x="344.4" y="45.0" text-anchor="middle">FastAPI /upload</text>
-  <text x="481.59999999999997" y="45.0" text-anchor="middle">ingest.py</text>
-  <text x="618.8" y="45.0" text-anchor="middle">OpenAIEmbeddings</text>
-  <text x="756.0" y="45.0" text-anchor="middle">pgvector</text>
-  <rect class="sk-bg" x="45" y="97" width="187" height="17" rx="3"/>
-  <text x="138.6" y="109" text-anchor="middle" font-size="12">1  Select files, click Upload</text>
-  <rect class="sk-bg" x="194" y="127" width="163" height="17" rx="3"/>
-  <text x="275.79999999999995" y="139" text-anchor="middle" font-size="12">2  POST /upload (files[])</text>
-  <text x="378.4" y="180" text-anchor="start" font-size="12">3  Validate type, save temp file</text>
-  <rect class="sk-bg" x="316" y="187" width="194" height="17" rx="3"/>
-  <text x="413.0" y="199" text-anchor="middle" font-size="12">4  ingest_file(path, filename)</text>
-  <text x="515.5999999999999" y="240" text-anchor="start" font-size="12">5  Load (PyPDF / Text)</text>
-  <text x="515.5999999999999" y="270" text-anchor="start" font-size="12">6  Split 1000 / 150 overlap</text>
-  <text x="515.5999999999999" y="300" text-anchor="start" font-size="12">7  Set metadata {source, page}</text>
-  <rect class="sk-bg" x="466" y="307" width="169" height="17" rx="3"/>
-  <text x="550.1999999999999" y="319" text-anchor="middle" class="sk-accent" font-size="12">8  embed_documents(chunks)</text>
-  <rect class="sk-bg" x="478" y="337" width="144" height="17" rx="3"/>
-  <text x="550.1999999999999" y="349" text-anchor="middle" class="sk-accent" font-size="12">9  vectors (1536 dims)</text>
-  <rect class="sk-bg" x="537" y="367" width="163" height="17" rx="3"/>
-  <text x="618.8" y="379" text-anchor="middle" class="sk-accent" font-size="12">10  INSERT embedding rows</text>
-  <rect class="sk-bg" x="363" y="397" width="101" height="17" rx="3"/>
-  <text x="413.0" y="409" text-anchor="middle" font-size="12">11  chunk count</text>
-  <rect class="sk-bg" x="198" y="427" width="156" height="17" rx="3"/>
-  <text x="275.79999999999995" y="439" text-anchor="middle" font-size="12">12  [{filename, chunks}]</text>
-  <rect class="sk-bg" x="216" y="457" width="119" height="17" rx="3"/>
-  <text x="275.79999999999995" y="469" text-anchor="middle" font-size="12">13  GET /documents</text>
-  <rect class="sk-bg" x="210" y="487" width="132" height="17" rx="3"/>
-  <text x="275.79999999999995" y="499" text-anchor="middle" font-size="12">14  [&quot;sample.md&quot;, …]</text>
-  <rect class="sk-bg" x="39" y="517" width="200" height="17" rx="3"/>
-  <text x="138.6" y="529" text-anchor="middle" font-size="12">15  sample.md: 2 chunks indexed</text>
-  <rect class="sk-bg" x="141" y="157" width="99" height="17" rx="3"/>
-  <text x="144.6" y="169" text-anchor="start" font-size="11" font-weight="700">loop · each file</text>
+  <text x="70.0" y="45.0" text-anchor="middle">seed() or /upload</text>
+  <text x="213.9" y="45.0" text-anchor="middle">ingest.py</text>
+  <text x="357.8" y="45.0" text-anchor="middle">OpenAIEmbeddings</text>
+  <text x="501.70000000000005" y="45.0" text-anchor="middle">pgvector</text>
+  <rect class="sk-bg" x="24" y="97" width="237" height="17" rx="3"/>
+  <text x="141.95" y="109" text-anchor="middle" font-size="12">1  each file: ingest_file(name, pack)</text>
+  <text x="247.9" y="150" text-anchor="start" font-size="12">2  sha256 of the file</text>
+  <rect class="sk-bg" x="280" y="157" width="156" height="17" rx="3"/>
+  <text x="357.8" y="169" text-anchor="middle" font-size="12">3  stored_versions(name)</text>
+  <rect class="sk-bg" x="286" y="187" width="144" height="17" rx="3"/>
+  <text x="357.8" y="199" text-anchor="middle" font-size="12">4  {(file_hash, pack)}</text>
+  <text x="247.9" y="240" text-anchor="start" font-size="12">5  Same hash + pack? Skip</text>
+  <text x="247.9" y="270" text-anchor="start" font-size="12">6  Load, split 1000 / 150</text>
+  <text x="247.9" y="300" text-anchor="start" font-size="12">7  Tag chunks: pack, chunk, hash</text>
+  <rect class="sk-bg" x="201" y="307" width="169" height="17" rx="3"/>
+  <text x="285.85" y="319" text-anchor="middle" class="sk-accent" font-size="12">8  embed_documents(chunks)</text>
+  <rect class="sk-bg" x="214" y="337" width="144" height="17" rx="3"/>
+  <text x="285.85" y="349" text-anchor="middle" class="sk-accent" font-size="12">9  vectors (1536 dims)</text>
+  <rect class="sk-bg" x="267" y="367" width="181" height="17" rx="3"/>
+  <text x="357.8" y="379" text-anchor="middle" class="sk-accent" font-size="12">10  INSERT rows (stable ids)</text>
+  <rect class="sk-bg" x="252" y="397" width="212" height="17" rx="3"/>
+  <text x="357.8" y="409" text-anchor="middle" font-size="12">11  delete_stale(name, keep=hash)</text>
+  <rect class="sk-bg" x="11" y="427" width="262" height="17" rx="3"/>
+  <text x="141.95" y="439" text-anchor="middle" font-size="12">12  (chunks, added | updated | unchanged)</text>
 </g>
 </svg></div>
-        <figcaption><b>Fig. 4</b> Sequence: ingestion (CoALA learning action).</figcaption>
+        <figcaption><b>Fig. 4</b> Sequence: ingestion with de-duplication (CoALA learning action).</figcaption>
       </figure>
 <h3>4.2 Query: question → retrieve → generate</h3>
 <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 963.1999999999999 536" role="img" aria-label="Sequence diagram of one chat turn: the question is embedded, the top four chunks are retrieved from pgvector, a prompt is built from rules, context and recent history, and the grounded answer returns with its sources." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 963.1999999999999 566" role="img" aria-label="Sequence diagram of one chat turn: the question is embedded, the top four chunks in the selected knowledge base are retrieved from pgvector with their similarity scores, a prompt is built from rules, context and recent history, and the grounded answer returns with its sources and timings." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig05seqquery-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="8" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig05seqquery-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
@@ -503,69 +528,71 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
 <g filter="url(#ffig05seqquery-rough)">
   <circle cx="70.0" cy="19" r="9"/>
   <path d="M70.0 28 V54 M55.0 38 H85.0 M70.0 54 L58.0 72 M70.0 54 L82.0 72"/>
-  <path d="M70.0 76 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M70.0 76 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <rect x="165.2" y="24" width="84" height="34" rx="6"/>
-  <path d="M207.2 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M207.2 58 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <rect x="291.84999999999997" y="24" width="105.10000000000001" height="34" rx="6"/>
-  <path d="M344.4 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M344.4 58 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <rect x="439.59999999999997" y="24" width="84" height="34" rx="6"/>
-  <path d="M481.59999999999997 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M481.59999999999997 58 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <rect x="556.1999999999999" y="24" width="125.2" height="34" rx="6"/>
-  <path d="M618.8 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M618.8 58 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <rect x="714.0" y="24" width="84" height="34" rx="6"/>
-  <path d="M756.0 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M756.0 58 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <rect x="850.6999999999999" y="24" width="85.0" height="34" rx="6"/>
-  <path d="M893.1999999999999 58 V520" stroke-dasharray="3 6" stroke-width="1"/>
+  <path d="M893.1999999999999 58 V550" stroke-dasharray="3 6" stroke-width="1"/>
   <path d="M74.0 116 L203.2 116" marker-end="url(#ffig05seqquery-arrow)"/>
   <path d="M211.2 146 L340.4 146" marker-end="url(#ffig05seqquery-arrow)"/>
-  <path d="M348.4 176 L477.59999999999997 176" marker-end="url(#ffig05seqquery-arrow)"/>
-  <path d="M485.59999999999997 206 L614.8 206" class="sk-accent" marker-end="url(#ffig05seqquery-arrow-accent)"/>
-  <path d="M614.8 236 L485.59999999999997 236" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow-accent)"/>
-  <path d="M485.59999999999997 266 L752.0 266" class="sk-accent" marker-end="url(#ffig05seqquery-arrow-accent)"/>
-  <path d="M752.0 296 L485.59999999999997 296" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow-accent)"/>
-  <path d="M481.59999999999997 320 L507.59999999999997 320 L507.59999999999997 332 L484.59999999999997 332" class="sk-accent" marker-end="url(#ffig05seqquery-arrow-accent)"/>
-  <path d="M485.59999999999997 356 L889.1999999999999 356" marker-end="url(#ffig05seqquery-arrow)"/>
-  <path d="M889.1999999999999 386 L485.59999999999997 386" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
-  <path d="M477.59999999999997 416 L348.4 416" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
-  <path d="M340.4 446 L211.2 446" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
-  <path d="M203.2 476 L74.0 476" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M344.4 170 L370.4 170 L370.4 182 L347.4 182" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M348.4 206 L477.59999999999997 206" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M485.59999999999997 236 L614.8 236" class="sk-accent" marker-end="url(#ffig05seqquery-arrow-accent)"/>
+  <path d="M614.8 266 L485.59999999999997 266" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow-accent)"/>
+  <path d="M485.59999999999997 296 L752.0 296" class="sk-accent" marker-end="url(#ffig05seqquery-arrow-accent)"/>
+  <path d="M752.0 326 L485.59999999999997 326" class="sk-accent" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow-accent)"/>
+  <path d="M481.59999999999997 350 L507.59999999999997 350 L507.59999999999997 362 L484.59999999999997 362" class="sk-accent" marker-end="url(#ffig05seqquery-arrow-accent)"/>
+  <path d="M485.59999999999997 386 L889.1999999999999 386" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M889.1999999999999 416 L485.59999999999997 416" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M477.59999999999997 446 L348.4 446" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M340.4 476 L211.2 476" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
+  <path d="M203.2 506 L74.0 506" stroke-dasharray="6 5" marker-end="url(#ffig05seqquery-arrow)"/>
 </g>
 <g fill="currentColor" stroke="none">
-  <text x="70.0" y="90" text-anchor="middle">User</text>
+  <text x="70.0" y="90" text-anchor="middle">Visitor</text>
   <text x="207.2" y="45.0" text-anchor="middle">ChatPanel</text>
   <text x="344.4" y="45.0" text-anchor="middle">FastAPI /chat</text>
   <text x="481.59999999999997" y="45.0" text-anchor="middle">rag.py</text>
   <text x="618.8" y="45.0" text-anchor="middle">OpenAIEmbeddings</text>
   <text x="756.0" y="45.0" text-anchor="middle">pgvector</text>
   <text x="893.1999999999999" y="45.0" text-anchor="middle">ChatOpenAI</text>
-  <rect class="sk-bg" x="79" y="97" width="119" height="17" rx="3"/>
-  <text x="138.6" y="109" text-anchor="middle" font-size="12">1  Type a question</text>
-  <rect class="sk-bg" x="173" y="127" width="206" height="17" rx="3"/>
-  <text x="275.79999999999995" y="139" text-anchor="middle" font-size="12">2  POST /chat {message, history}</text>
-  <rect class="sk-bg" x="326" y="157" width="175" height="17" rx="3"/>
-  <text x="413.0" y="169" text-anchor="middle" font-size="12">3  answer(message, history)</text>
-  <rect class="sk-bg" x="475" y="187" width="150" height="17" rx="3"/>
-  <text x="550.1999999999999" y="199" text-anchor="middle" class="sk-accent" font-size="12">4  embed_query(message)</text>
-  <rect class="sk-bg" x="500" y="217" width="101" height="17" rx="3"/>
-  <text x="550.1999999999999" y="229" text-anchor="middle" class="sk-accent" font-size="12">5  query vector</text>
-  <rect class="sk-bg" x="544" y="247" width="150" height="17" rx="3"/>
-  <text x="618.8" y="259" text-anchor="middle" class="sk-accent" font-size="12">6  cosine search, k = 4</text>
-  <rect class="sk-bg" x="534" y="277" width="169" height="17" rx="3"/>
-  <text x="618.8" y="289" text-anchor="middle" class="sk-accent" font-size="12">7  top-4 chunks + metadata</text>
-  <text x="515.5999999999999" y="330" text-anchor="start" class="sk-accent" font-size="12">8  Build prompt: rules + context + 6 turns</text>
-  <rect class="sk-bg" x="625" y="337" width="126" height="17" rx="3"/>
-  <text x="687.4" y="349" text-anchor="middle" font-size="12">9  invoke(messages)</text>
-  <rect class="sk-bg" x="603" y="367" width="169" height="17" rx="3"/>
-  <text x="687.4" y="379" text-anchor="middle" font-size="12">10  answer with [file p.N]</text>
-  <rect class="sk-bg" x="338" y="397" width="150" height="17" rx="3"/>
-  <text x="413.0" y="409" text-anchor="middle" font-size="12">11  {answer, sources[]}</text>
-  <rect class="sk-bg" x="241" y="427" width="70" height="17" rx="3"/>
-  <text x="275.79999999999995" y="439" text-anchor="middle" font-size="12">12  200 OK</text>
-  <rect class="sk-bg" x="73" y="457" width="132" height="17" rx="3"/>
-  <text x="138.6" y="469" text-anchor="middle" font-size="12">13  Answer + Sources</text>
+  <rect class="sk-bg" x="45" y="97" width="187" height="17" rx="3"/>
+  <text x="138.6" y="109" text-anchor="middle" font-size="12">1  Ask, or click a suggestion</text>
+  <rect class="sk-bg" x="154" y="127" width="243" height="17" rx="3"/>
+  <text x="275.79999999999995" y="139" text-anchor="middle" font-size="12">2  POST /chat {message, pack, history}</text>
+  <text x="378.4" y="180" text-anchor="start" font-size="12">3  Rate limit, check pack</text>
+  <rect class="sk-bg" x="307" y="187" width="212" height="17" rx="3"/>
+  <text x="413.0" y="199" text-anchor="middle" font-size="12">4  answer(message, history, pack)</text>
+  <rect class="sk-bg" x="475" y="217" width="150" height="17" rx="3"/>
+  <text x="550.1999999999999" y="229" text-anchor="middle" class="sk-accent" font-size="12">5  embed_query(message)</text>
+  <rect class="sk-bg" x="500" y="247" width="101" height="17" rx="3"/>
+  <text x="550.1999999999999" y="259" text-anchor="middle" class="sk-accent" font-size="12">6  query vector</text>
+  <rect class="sk-bg" x="503" y="277" width="231" height="17" rx="3"/>
+  <text x="618.8" y="289" text-anchor="middle" class="sk-accent" font-size="12">7  cosine search, k = 4, pack filter</text>
+  <rect class="sk-bg" x="531" y="307" width="175" height="17" rx="3"/>
+  <text x="618.8" y="319" text-anchor="middle" class="sk-accent" font-size="12">8  top-4 chunks + distances</text>
+  <text x="515.5999999999999" y="360" text-anchor="start" class="sk-accent" font-size="12">9  Build prompt: rules + context + 6 turns</text>
+  <rect class="sk-bg" x="622" y="367" width="132" height="17" rx="3"/>
+  <text x="687.4" y="379" text-anchor="middle" font-size="12">10  invoke(messages)</text>
+  <rect class="sk-bg" x="575" y="397" width="224" height="17" rx="3"/>
+  <text x="687.4" y="409" text-anchor="middle" font-size="12">11  answer with [file p.N] + tokens</text>
+  <rect class="sk-bg" x="322" y="427" width="181" height="17" rx="3"/>
+  <text x="413.0" y="439" text-anchor="middle" font-size="12">12  {answer, sources, stats}</text>
+  <rect class="sk-bg" x="241" y="457" width="70" height="17" rx="3"/>
+  <text x="275.79999999999995" y="469" text-anchor="middle" font-size="12">13  200 OK</text>
+  <rect class="sk-bg" x="33" y="487" width="212" height="17" rx="3"/>
+  <text x="138.6" y="499" text-anchor="middle" font-size="12">14  Answer; click it for evidence</text>
 </g>
 </svg></div>
-        <figcaption><b>Fig. 5</b> Sequence: one chat turn (retrieval → working memory → reasoning).</figcaption>
+        <figcaption><b>Fig. 5</b> Sequence: one chat turn within a pack (retrieval → working memory → reasoning).</figcaption>
       </figure>
 <h3>4.3 Chat request lifecycle</h3>
 <figure class="uml">
@@ -597,8 +624,8 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
   <text x="250" y="100" text-anchor="middle" class="sk-accent" font-size="12">user submits</text>
   <rect class="sk-bg" x="422" y="54" width="45" height="17" rx="3"/>
   <text x="445" y="66" text-anchor="middle" font-size="12">200 OK</text>
-  <rect class="sk-bg" x="401" y="148" width="88" height="17" rx="3"/>
-  <text x="445" y="160" text-anchor="middle" font-size="12">network / 5xx</text>
+  <rect class="sk-bg" x="382" y="148" width="126" height="17" rx="3"/>
+  <text x="445" y="160" text-anchor="middle" font-size="12">network / 4xx / 5xx</text>
   <rect class="sk-bg" x="334" y="6" width="33" height="17" rx="3"/>
   <text x="350" y="18" text-anchor="middle" font-size="12">done</text>
   <rect class="sk-bg" x="309" y="198" width="82" height="17" rx="3"/>
@@ -613,64 +640,76 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
     <section id="backend">
       <h2><span class="num">5</span>Backend design</h2>
       <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 470" role="img" aria-label="Class diagram: main.py depends on ingest, rag and vectorstore; ingest and rag both use vectorstore, which reads Settings; ChatRequest holds Messages and ChatResponse holds Sources." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 540" role="img" aria-label="Class diagram: main.py depends on samples, ingest, rag and vectorstore; samples seeds packs through ingest; ingest and rag both use vectorstore, which reads Settings; ChatRequest holds Messages and ChatResponse holds Sources and Stats." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig07classes-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="10" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig07classes-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 <marker id="ffig07classes-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 </defs>
 <g filter="url(#ffig07classes-rough)">
-  <rect x="300" y="16" width="200" height="106" rx="4"/>
-  <path d="M300 44 H500"/>
-  <rect x="40" y="170" width="220" height="89" rx="4"/>
-  <path d="M40 198 H260"/>
-  <rect x="540" y="170" width="220" height="89" rx="4" class="sk-accent"/>
-  <path d="M540 198 H760"/>
-  <rect x="290" y="200" width="220" height="72" rx="4" class="sk-accent"/>
-  <path d="M290 228 H510"/>
-  <rect x="300" y="330" width="200" height="89" rx="4"/>
-  <path d="M300 358 H500"/>
-  <path d="M340 122 L200 170" marker-end="url(#ffig07classes-arrow)"/>
-  <path d="M460 122 L600 170" class="sk-accent" marker-end="url(#ffig07classes-arrow-accent)"/>
-  <path d="M400 122 L400 200" marker-end="url(#ffig07classes-arrow)"/>
-  <path d="M260 215 L290 230" marker-end="url(#ffig07classes-arrow)"/>
-  <path d="M540 215 L510 230" class="sk-accent" marker-end="url(#ffig07classes-arrow-accent)"/>
-  <path d="M400 276 L400 330" marker-end="url(#ffig07classes-arrow)"/>
-  <path d="M640 262 L640 300 L500 360" marker-end="url(#ffig07classes-arrow)"/>
-  <rect x="40" y="330" width="200" height="72" rx="4"/>
-  <path d="M40 358 H240"/>
-  <rect x="560" y="370" width="200" height="72" rx="4"/>
-  <path d="M560 398 H760"/>
+  <rect x="320" y="16" width="220" height="123" rx="4"/>
+  <path d="M320 44 H540"/>
+  <rect x="20" y="30" width="220" height="89" rx="4"/>
+  <path d="M20 58 H240"/>
+  <rect x="20" y="190" width="240" height="72" rx="4"/>
+  <path d="M20 218 H260"/>
+  <rect x="600" y="190" width="240" height="89" rx="4" class="sk-accent"/>
+  <path d="M600 218 H840"/>
+  <rect x="300" y="210" width="260" height="106" rx="4" class="sk-accent"/>
+  <path d="M300 238 H560"/>
+  <rect x="320" y="380" width="220" height="89" rx="4"/>
+  <path d="M320 408 H540"/>
+  <path d="M320 60 L240 70" marker-end="url(#ffig07classes-arrow)"/>
+  <path d="M130 106 L130 190" marker-end="url(#ffig07classes-arrow)"/>
+  <path d="M360 137 L220 190" marker-end="url(#ffig07classes-arrow)"/>
+  <path d="M500 137 L660 190" class="sk-accent" marker-end="url(#ffig07classes-arrow-accent)"/>
+  <path d="M430 137 L430 210" marker-end="url(#ffig07classes-arrow)"/>
+  <path d="M260 230 L300 240" marker-end="url(#ffig07classes-arrow)"/>
+  <path d="M600 235 L560 245" class="sk-accent" marker-end="url(#ffig07classes-arrow-accent)"/>
+  <path d="M430 314 L430 380" marker-end="url(#ffig07classes-arrow)"/>
+  <rect x="20" y="380" width="230" height="89" rx="4"/>
+  <path d="M20 408 H250"/>
+  <rect x="600" y="380" width="240" height="89" rx="4"/>
+  <path d="M600 408 H840"/>
 </g>
 <g fill="currentColor" stroke="none">
-  <text x="400.0" y="35" text-anchor="middle" font-weight="700">main</text>
-  <text x="310" y="62" text-anchor="start" font-size="11.5">+GET /health</text>
-  <text x="310" y="79" text-anchor="start" font-size="11.5">+POST /upload</text>
-  <text x="310" y="96" text-anchor="start" font-size="11.5">+GET /documents</text>
-  <text x="310" y="113" text-anchor="start" font-size="11.5">+POST /chat</text>
-  <text x="150.0" y="189" text-anchor="middle" font-weight="700">ingest</text>
-  <text x="50" y="216" text-anchor="start" font-size="11.5">+ingest_file(path, name) int</text>
-  <text x="50" y="233" text-anchor="start" font-size="11.5">-_load(path, name)</text>
-  <text x="50" y="250" text-anchor="start" font-size="11.5">-_split(docs)</text>
-  <text x="650.0" y="189" text-anchor="middle" class="sk-accent" font-weight="700">rag</text>
-  <text x="550" y="216" text-anchor="start" font-size="11.5">+answer(question, history) dict</text>
-  <text x="550" y="233" text-anchor="start" font-size="11.5">-_format_context(docs) str</text>
-  <text x="550" y="250" text-anchor="start" font-size="11.5">-_llm() ChatOpenAI</text>
-  <text x="400.0" y="219" text-anchor="middle" class="sk-accent" font-weight="700">vectorstore</text>
-  <text x="300" y="246" text-anchor="start" font-size="11.5">+get_vector_store() PGVector</text>
-  <text x="300" y="263" text-anchor="start" font-size="11.5">+list_sources() list[str]</text>
-  <text x="400.0" y="349" text-anchor="middle" font-weight="700">Settings</text>
-  <text x="310" y="376" text-anchor="start" font-size="11.5">chat_model · embedding_model</text>
-  <text x="310" y="393" text-anchor="start" font-size="11.5">chunk_size · chunk_overlap</text>
-  <text x="310" y="410" text-anchor="start" font-size="11.5">top_k · history_turns</text>
-  <text x="140.0" y="349" text-anchor="middle" font-weight="700">ChatRequest</text>
-  <text x="50" y="376" text-anchor="start" font-size="11.5">message: str</text>
-  <text x="50" y="393" text-anchor="start" font-size="11.5">history: Message[]</text>
-  <text x="660.0" y="389" text-anchor="middle" font-weight="700">ChatResponse</text>
-  <text x="570" y="416" text-anchor="start" font-size="11.5">answer: str</text>
-  <text x="570" y="433" text-anchor="start" font-size="11.5">sources: Source[]</text>
-  <text x="140" y="430" text-anchor="middle" font-size="11">◆ holds Message {role, content}</text>
-  <text x="660" y="460" text-anchor="middle" font-size="11">◆ holds Source {source, page, snippet}</text>
+  <text x="430.0" y="35" text-anchor="middle" font-weight="700">main</text>
+  <text x="330" y="62" text-anchor="start" font-size="11.5">+GET /health · /config</text>
+  <text x="330" y="79" text-anchor="start" font-size="11.5">+GET /packs · /packs/{id}/rows</text>
+  <text x="330" y="96" text-anchor="start" font-size="11.5">+POST /chat</text>
+  <text x="330" y="113" text-anchor="start" font-size="11.5">+POST /upload (local mode)</text>
+  <text x="330" y="130" text-anchor="start" font-size="11.5">+DELETE /documents/{name}</text>
+  <text x="130.0" y="49" text-anchor="middle" font-weight="700">samples</text>
+  <text x="30" y="76" text-anchor="start" font-size="11.5">+packs() list[dict]</text>
+  <text x="30" y="93" text-anchor="start" font-size="11.5">+seed()</text>
+  <text x="30" y="110" text-anchor="start" font-size="11.5">+pack_ids() set[str]</text>
+  <text x="140.0" y="209" text-anchor="middle" font-weight="700">ingest</text>
+  <text x="30" y="236" text-anchor="start" font-size="11.5">+ingest_file(path, name, pack)</text>
+  <text x="30" y="253" text-anchor="start" font-size="11.5">-_load · _split · _file_hash</text>
+  <text x="720.0" y="209" text-anchor="middle" class="sk-accent" font-weight="700">rag</text>
+  <text x="610" y="236" text-anchor="start" font-size="11.5">+answer(question, history, pack)</text>
+  <text x="610" y="253" text-anchor="start" font-size="11.5">-_format_context(docs) str</text>
+  <text x="610" y="270" text-anchor="start" font-size="11.5">-_llm() ChatOpenAI</text>
+  <text x="430.0" y="229" text-anchor="middle" class="sk-accent" font-weight="700">vectorstore</text>
+  <text x="310" y="256" text-anchor="start" font-size="11.5">+get_vector_store() PGVector</text>
+  <text x="310" y="273" text-anchor="start" font-size="11.5">+pack_documents · pack_rows</text>
+  <text x="310" y="290" text-anchor="start" font-size="11.5">+stored_versions · delete_stale</text>
+  <text x="310" y="307" text-anchor="start" font-size="11.5">+delete_source · count_chunks</text>
+  <text x="430.0" y="399" text-anchor="middle" font-weight="700">Settings</text>
+  <text x="330" y="426" text-anchor="start" font-size="11.5">chat_model · embedding_model</text>
+  <text x="330" y="443" text-anchor="start" font-size="11.5">chunk_size · chunk_overlap · top_k</text>
+  <text x="330" y="460" text-anchor="start" font-size="11.5">allow_uploads · rate limits</text>
+  <text x="135.0" y="399" text-anchor="middle" font-weight="700">ChatRequest</text>
+  <text x="30" y="426" text-anchor="start" font-size="11.5">message: str (≤ 1000)</text>
+  <text x="30" y="443" text-anchor="start" font-size="11.5">history: Message[] (≤ 20)</text>
+  <text x="30" y="460" text-anchor="start" font-size="11.5">pack: str</text>
+  <text x="720.0" y="399" text-anchor="middle" font-weight="700">ChatResponse</text>
+  <text x="610" y="426" text-anchor="start" font-size="11.5">answer: str</text>
+  <text x="610" y="443" text-anchor="start" font-size="11.5">sources: Source[]</text>
+  <text x="610" y="460" text-anchor="start" font-size="11.5">stats: Stats</text>
+  <text x="135" y="490" text-anchor="middle" font-size="11">◆ holds Message {role, content}</text>
+  <text x="720" y="490" text-anchor="middle" font-size="11">◆ Source {rank, source, page, chunk, score}</text>
+  <text x="720" y="510" text-anchor="middle" font-size="11">◆ Stats {retrieve_ms, generate_ms, tokens}</text>
 </g>
 </svg></div>
         <figcaption><b>Fig. 7</b> Class diagram: Python modules and Pydantic models.</figcaption>
@@ -684,23 +723,27 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
 </thead>
 <tbody><tr>
 <td><code>app/config.py</code></td>
-<td>Loads <code>.env</code> and exposes a frozen <code>Settings</code> dataclass.</td>
+<td>Loads <code>.env</code> and exposes a frozen <code>Settings</code> dataclass: models, chunking, <code>top_k</code>, <code>ALLOW_UPLOADS</code> and the rate and size limits.</td>
+</tr>
+<tr>
+<td><code>app/samples.py</code></td>
+<td>Reads <code>samples/packs.json</code> and indexes every sample file at startup (<code>seed()</code>), skipping unchanged files.</td>
 </tr>
 <tr>
 <td><code>app/vectorstore.py</code></td>
-<td>Cached <code>PGVector</code> (collection <code>docs</code>, JSONB metadata) using <code>OpenAIEmbeddings</code>, plus the distinct-sources query.</td>
+<td>Cached <code>PGVector</code> (collection <code>docs</code>, JSONB metadata) using <code>OpenAIEmbeddings</code>, plus SQL for pack documents, rows, de-duplication and delete.</td>
 </tr>
 <tr>
 <td><code>app/ingest.py</code></td>
-<td>Picks a loader by file extension, splits with <code>RecursiveCharacterTextSplitter</code>, tags <code>source</code> and a 1-based <code>page</code>, then calls <code>add_documents</code>.</td>
+<td>Hashes the file, skips it if unchanged, picks a loader by extension, splits with <code>RecursiveCharacterTextSplitter</code>, tags <code>source</code>, <code>page</code>, <code>chunk</code>, <code>pack</code> and <code>file_hash</code>, then calls <code>add_documents</code> with stable ids.</td>
 </tr>
 <tr>
 <td><code>app/rag.py</code></td>
-<td>Runs <code>similarity_search(k=4)</code>, builds the prompt with <code>ChatPromptTemplate</code> and <code>MessagesPlaceholder</code>, calls <code>ChatOpenAI(temperature=0)</code>, and returns the answer and sources.</td>
+<td>Runs <code>similarity_search_with_score(k=4)</code> filtered to the pack, builds the prompt with <code>ChatPromptTemplate</code> and <code>MessagesPlaceholder</code>, calls <code>ChatOpenAI(temperature=0)</code>, and returns the answer, sources with similarity scores, and timings.</td>
 </tr>
 <tr>
 <td><code>app/main.py</code></td>
-<td>FastAPI routes, CORS for <code>localhost:3000</code>, request and response models, and error mapping.</td>
+<td>FastAPI routes, startup seeding, CORS, request and response models, per-IP rate limits, upload guards and error mapping.</td>
 </tr>
 </tbody></table></div>
 <h3>System prompt</h3>
@@ -708,7 +751,7 @@ footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
 Answer the question using ONLY the context below.
 If the answer is not in the context, reply exactly:
 &quot;I don&#39;t know based on the uploaded documents.&quot;
-Cite sources inline as [filename p.N].
+Cite sources inline as [filename p.N] (omit p.N when there is no page).
 
 Context:
 {context}</blockquote>
@@ -729,33 +772,51 @@ Context:
 <td><code>{&quot;status&quot;:&quot;ok&quot;}</code></td>
 </tr>
 <tr>
-<td class="method">POST</td>
-<td><code>/upload</code></td>
-<td>multipart, field <code>files</code> (1..n)</td>
-<td><code>[{&quot;filename&quot;,&quot;chunks&quot;}]</code></td>
+<td class="method">GET</td>
+<td><code>/config</code></td>
+<td>n/a</td>
+<td><code>{&quot;allow_uploads&quot;,&quot;chat_model&quot;,&quot;embedding_model&quot;,&quot;chunk_size&quot;,&quot;chunk_overlap&quot;,&quot;top_k&quot;,…}</code></td>
 </tr>
 <tr>
 <td class="method">GET</td>
-<td><code>/documents</code></td>
+<td><code>/packs</code></td>
 <td>n/a</td>
-<td><code>[&quot;a.pdf&quot;, …]</code></td>
+<td><code>[{&quot;id&quot;,&quot;title&quot;,&quot;audience&quot;,&quot;problem&quot;,&quot;value&quot;,&quot;questions&quot;,&quot;readonly&quot;,&quot;documents&quot;:[{&quot;filename&quot;,&quot;chunks&quot;,&quot;pages&quot;}]}]</code></td>
+</tr>
+<tr>
+<td class="method">GET</td>
+<td><code>/packs/{id}/rows</code></td>
+<td>n/a</td>
+<td><code>{&quot;limit&quot;:100,&quot;rows&quot;:[{&quot;id&quot;,&quot;source&quot;,&quot;page&quot;,&quot;chunk&quot;,&quot;file_hash&quot;,&quot;dims&quot;,&quot;embedding_preview&quot;,&quot;text&quot;}]}</code></td>
 </tr>
 <tr>
 <td class="method">POST</td>
 <td><code>/chat</code></td>
-<td><code>{&quot;message&quot;,&quot;history&quot;:[{&quot;role&quot;,&quot;content&quot;}]}</code></td>
-<td><code>{&quot;answer&quot;,&quot;sources&quot;:[{&quot;source&quot;,&quot;page&quot;,&quot;snippet&quot;}]}</code></td>
+<td><code>{&quot;message&quot;,&quot;pack&quot;,&quot;history&quot;:[{&quot;role&quot;,&quot;content&quot;}]}</code></td>
+<td><code>{&quot;answer&quot;,&quot;sources&quot;:[{&quot;rank&quot;,&quot;id&quot;,&quot;source&quot;,&quot;page&quot;,&quot;chunk&quot;,&quot;score&quot;,…}],&quot;stats&quot;:{&quot;retrieve_ms&quot;,&quot;generate_ms&quot;,&quot;chunks_searched&quot;,&quot;prompt_tokens&quot;,…}}</code></td>
+</tr>
+<tr>
+<td class="method">POST</td>
+<td><code>/upload</code></td>
+<td>multipart, field <code>files</code> (1..5), local mode</td>
+<td><code>[{&quot;filename&quot;,&quot;chunks&quot;,&quot;status&quot;}]</code>, status is <code>added</code>, <code>updated</code> or <code>unchanged</code></td>
+</tr>
+<tr>
+<td class="method">DELETE</td>
+<td><code>/documents/{filename}</code></td>
+<td>n/a, local mode</td>
+<td><code>{&quot;filename&quot;,&quot;chunks_deleted&quot;}</code></td>
 </tr>
 </tbody></table></div>
-<p>Errors: <code>400</code> for an unsupported file type or an empty message. <code>500</code> with a readable <code>detail</code> for OpenAI or database failures.</p>
+<p>Errors: <code>400</code> for an unsupported file type or an empty message, <code>403</code> for uploads in demo mode or deleting a sample, <code>404</code> for an unknown pack or document, <code>409</code> for an upload that reuses a sample filename, <code>413</code> for a file that is too large, <code>429</code> when a rate limit is hit. <code>500</code> with a readable <code>detail</code> for OpenAI or database failures.</p>
 
     </section>
 
     <section id="data">
       <h2><span class="num">6</span>Data model</h2>
-      <p><code>langchain-postgres</code> creates the <code>vector</code> extension and both tables on first use, so no migrations are needed. Each chunk is one row: its text, its 1536-dimension embedding and JSONB metadata.</p>
+      <p><code>langchain-postgres</code> creates the <code>vector</code> extension and both tables on first use, so no migrations are needed. Each chunk is one row: its text, its 1536-dimension embedding and JSONB metadata. The <code>pack</code> key in that metadata is what keeps each knowledge base separate; the evidence panel reads these rows directly.</p>
 <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" role="img" aria-label="Entity-relationship diagram: one langchain_pg_collection row contains many langchain_pg_embedding rows, each holding the chunk text, a 1536-dimension vector and JSONB metadata." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 230" role="img" aria-label="Entity-relationship diagram: one langchain_pg_collection row contains many langchain_pg_embedding rows, each holding the chunk text, a 1536-dimension vector and JSONB metadata including its knowledge base (pack) and file hash." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig08er-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig08er-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
@@ -764,8 +825,8 @@ Context:
 <g filter="url(#ffig08er-rough)">
   <rect x="20" y="30" width="250" height="96" rx="4"/>
   <path d="M20 58 H270"/>
-  <rect x="420" y="30" width="280" height="136" rx="4" class="sk-accent"/>
-  <path d="M420 58 H700"/>
+  <rect x="420" y="30" width="300" height="156" rx="4" class="sk-accent"/>
+  <path d="M420 58 H720"/>
   <path d="M270 80 L420 80"/>
   <path d="M282 72 V88 M288 72 V88"/>
   <path d="M420 72 L406 80 L420 88 M400 72 V88"/>
@@ -777,17 +838,19 @@ Context:
   <text x="30" y="97" text-anchor="start" font-size="11.5">name varchar</text>
   <text x="260" y="97" text-anchor="end" font-size="11">&quot;docs&quot;</text>
   <text x="30" y="117" text-anchor="start" font-size="11.5">cmetadata jsonb</text>
-  <text x="560.0" y="49" text-anchor="middle" class="sk-accent" font-weight="700">langchain_pg_embedding</text>
+  <text x="570.0" y="49" text-anchor="middle" class="sk-accent" font-weight="700">langchain_pg_embedding</text>
   <text x="430" y="77" text-anchor="start" font-size="11.5">id varchar</text>
-  <text x="690" y="77" text-anchor="end" font-size="11">PK</text>
+  <text x="710" y="77" text-anchor="end" font-size="11">PK (stable)</text>
   <text x="430" y="97" text-anchor="start" font-size="11.5">collection_id uuid</text>
-  <text x="690" y="97" text-anchor="end" font-size="11">FK</text>
+  <text x="710" y="97" text-anchor="end" font-size="11">FK</text>
   <text x="430" y="117" text-anchor="start" font-size="11.5">embedding vector</text>
-  <text x="690" y="117" text-anchor="end" font-size="11">1536 dims</text>
+  <text x="710" y="117" text-anchor="end" font-size="11">1536 dims</text>
   <text x="430" y="137" text-anchor="start" font-size="11.5">document varchar</text>
-  <text x="690" y="137" text-anchor="end" font-size="11">chunk text</text>
+  <text x="710" y="137" text-anchor="end" font-size="11">chunk text</text>
   <text x="430" y="157" text-anchor="start" font-size="11.5">cmetadata jsonb</text>
-  <text x="690" y="157" text-anchor="end" font-size="11">source, page</text>
+  <text x="710" y="157" text-anchor="end" font-size="11">source, page, chunk,</text>
+  <text x="430" y="177" text-anchor="start" font-size="11.5"></text>
+  <text x="710" y="177" text-anchor="end" font-size="11">pack, file_hash</text>
   <text x="345" y="70" text-anchor="middle" font-size="12">contains</text>
 </g>
 </svg></div>
@@ -799,45 +862,61 @@ Context:
     <section id="frontend">
       <h2><span class="num">7</span>Frontend design</h2>
       <figure class="uml">
-        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 270" role="img" aria-label="Frontend component tree: page.tsx lays out UploadPanel and ChatPanel; ChatPanel renders MessageBubble; both panels call the API through lib/api.ts." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <div class="canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 300" role="img" aria-label="Frontend component tree: page.tsx lays out four panels; KnowledgeBase shows the packs and, in local mode, UploadPanel; ChatPanel renders MessageBubble; selecting an answer feeds InsightPanel and EvidencePanel. All API calls go through lib/api.ts." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <defs>
 <filter id="ffig09frontend-rough" x="-3%" y="-3%" width="106%" height="106%"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="12" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/></filter>
 <marker id="ffig09frontend-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 <marker id="ffig09frontend-arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 </defs>
 <g filter="url(#ffig09frontend-rough)">
-  <rect x="220" y="20" width="260" height="44" rx="6"/>
-  <rect x="40" y="110" width="240" height="44" rx="6"/>
-  <rect x="420" y="110" width="240" height="44" rx="6" class="sk-accent"/>
-  <rect x="420" y="200" width="240" height="44" rx="6"/>
-  <rect x="110" y="200" width="240" height="44" rx="6"/>
-  <path d="M300 64 L190 110" marker-end="url(#ffig09frontend-arrow)"/>
-  <path d="M400 64 L510 110" marker-end="url(#ffig09frontend-arrow)"/>
-  <path d="M540 154 L540 200" marker-end="url(#ffig09frontend-arrow)"/>
-  <path d="M160 154 L200 200" marker-end="url(#ffig09frontend-arrow)"/>
-  <path d="M420 140 L330 200" class="sk-accent" marker-end="url(#ffig09frontend-arrow-accent)"/>
+  <rect x="250" y="16" width="360" height="44" rx="6"/>
+  <rect x="20" y="110" width="190" height="44" rx="6"/>
+  <path d="M430 60 L115 110" marker-end="url(#ffig09frontend-arrow)"/>
+  <rect x="230" y="110" width="190" height="44" rx="6" class="sk-accent"/>
+  <path d="M430 60 L325 110" class="sk-accent" marker-end="url(#ffig09frontend-arrow-accent)"/>
+  <rect x="440" y="110" width="190" height="44" rx="6"/>
+  <path d="M430 60 L535 110" marker-end="url(#ffig09frontend-arrow)"/>
+  <rect x="650" y="110" width="190" height="44" rx="6"/>
+  <path d="M430 60 L745 110" marker-end="url(#ffig09frontend-arrow)"/>
+  <rect x="20" y="196" width="190" height="44" rx="6"/>
+  <rect x="230" y="196" width="190" height="44" rx="6"/>
+  <path d="M115 154 L115 196" marker-end="url(#ffig09frontend-arrow)"/>
+  <path d="M325 154 L325 196" marker-end="url(#ffig09frontend-arrow)"/>
+  <rect x="440" y="220" width="400" height="44" rx="6"/>
+  <path d="M420 140 L520 220" class="sk-accent" marker-end="url(#ffig09frontend-arrow-accent)"/>
+  <path d="M745 154 L745 220" marker-end="url(#ffig09frontend-arrow)"/>
 </g>
 <g fill="currentColor" stroke="none">
-  <text x="350.0" y="39.0" text-anchor="middle">app/page.tsx</text>
-  <text x="350.0" y="54.0" text-anchor="middle" font-size="11">two columns, stacks on mobile</text>
-  <text x="160.0" y="129.0" text-anchor="middle">UploadPanel</text>
-  <text x="160.0" y="144.0" text-anchor="middle" font-size="11">files · uploading · docs</text>
-  <text x="540.0" y="129.0" text-anchor="middle" class="sk-accent">ChatPanel</text>
-  <text x="540.0" y="144.0" text-anchor="middle" font-size="11">messages · input · loading</text>
-  <text x="540.0" y="219.0" text-anchor="middle">MessageBubble</text>
-  <text x="540.0" y="234.0" text-anchor="middle" font-size="11">answer + Sources</text>
-  <text x="230.0" y="219.0" text-anchor="middle">lib/api.ts</text>
-  <text x="230.0" y="234.0" text-anchor="middle" font-size="11">uploadFiles · listDocuments · sendChat</text>
-  <rect class="sk-bg" x="371" y="174" width="57" height="17" rx="3"/>
-  <text x="400" y="186" text-anchor="middle" class="sk-accent" font-size="12">sendChat</text>
+  <text x="430.0" y="35.0" text-anchor="middle">app/page.tsx</text>
+  <text x="430.0" y="50.0" text-anchor="middle" font-size="11">3 columns + bottom panel · chat thread per pack</text>
+  <text x="115.0" y="129.0" text-anchor="middle">KnowledgeBase</text>
+  <text x="115.0" y="144.0" text-anchor="middle" font-size="11">1 · packs, documents</text>
+  <text x="325.0" y="129.0" text-anchor="middle" class="sk-accent">ChatPanel</text>
+  <text x="325.0" y="144.0" text-anchor="middle" font-size="11">2 · thread, suggestions</text>
+  <text x="535.0" y="129.0" text-anchor="middle">InsightPanel</text>
+  <text x="535.0" y="144.0" text-anchor="middle" font-size="11">3 · steps, timings, tokens</text>
+  <text x="745.0" y="129.0" text-anchor="middle">EvidencePanel</text>
+  <text x="745.0" y="144.0" text-anchor="middle" font-size="11">sources table · DB rows</text>
+  <text x="115.0" y="215.0" text-anchor="middle">UploadPanel</text>
+  <text x="115.0" y="230.0" text-anchor="middle" font-size="11">local mode only</text>
+  <text x="325.0" y="215.0" text-anchor="middle">MessageBubble</text>
+  <text x="325.0" y="230.0" text-anchor="middle" font-size="11">answer · cited sources</text>
+  <text x="640.0" y="239.0" text-anchor="middle">lib/api.ts</text>
+  <text x="640.0" y="254.0" text-anchor="middle" font-size="11">fetch wrappers for every route</text>
+  <rect class="sk-bg" x="441" y="184" width="57" height="17" rx="3"/>
+  <text x="470" y="196" text-anchor="middle" class="sk-accent" font-size="12">sendChat</text>
+  <rect class="sk-bg" x="761" y="180" width="57" height="17" rx="3"/>
+  <text x="790" y="192" text-anchor="middle" font-size="12">listRows</text>
 </g>
 </svg></div>
         <figcaption><b>Fig. 9</b> Frontend component tree.</figcaption>
       </figure>
 <ul class="plain">
-<li>Client components (<code>&quot;use client&quot;</code>) with Tailwind v4. No extra packages beyond the <code>create-next-app</code> defaults.</li>
-<li>Plain <code>fetch</code> to <code>NEXT_PUBLIC_API_URL</code> (default <code>http://localhost:8000</code>).</li>
-<li>Each assistant reply has a collapsible Sources list showing the retrieved chunks.</li>
+<li>A full-page layout: knowledge bases on the left, the chat in the centre, &quot;How this answer was built&quot; on the right, and an evidence panel along the bottom. On mobile the panels stack.</li>
+<li>Each pack keeps its own chat thread, so switching packs never mixes answers.</li>
+<li>Clicking an answer selects it: the insight panel shows retrieve and generate timings and token counts; the evidence panel shows the <strong>Answer sources</strong> table (rank, document, page, chunk, similarity, cited) and <strong>Database rows</strong> from <code>langchain_pg_embedding</code>.</li>
+<li><code>UploadPanel</code> appears only when <code>/config</code> reports <code>allow_uploads</code>.</li>
+<li>Client components (<code>&quot;use client&quot;</code>) with Tailwind v4 and plain <code>fetch</code> to <code>NEXT_PUBLIC_API_URL</code> (default <code>http://localhost:8000</code>). No extra packages beyond the <code>create-next-app</code> defaults.</li>
 </ul>
 
     </section>
@@ -851,11 +930,12 @@ Context:
 ├── backend/
 │   ├── requirements.txt
 │   ├── .env.example          OPENAI_API_KEY, DATABASE_URL
-│   ├── sample/sample.md      example handbook to upload
-│   └── app/  config · vectorstore · ingest · rag · main
+│   ├── samples/              packs.json + fictional docs (hr/, legal/, support/)
+│   └── app/  config · samples · vectorstore · ingest · rag · main
 └── frontend/
     ├── lib/api.ts
-    └── app/  page.tsx · components/{UploadPanel, ChatPanel, MessageBubble}.tsx
+    └── app/  page.tsx · components/{KnowledgeBase, ChatPanel, InsightPanel,
+              EvidencePanel, UploadPanel, MessageBubble, Header, Panel}.tsx
 </pre>
 
     </section>
@@ -882,19 +962,27 @@ npm install &amp;&amp; npm run dev                                 # :3000
 <td><code>{&quot;status&quot;:&quot;ok&quot;}</code></td>
 </tr>
 <tr>
-<td>Upload <code>sample/sample.md</code></td>
-<td>Chunk count greater than 0. The file appears under Indexed documents.</td>
+<td>Start the backend</td>
+<td>Log shows each sample file <code>added</code> (first run) or <code>unchanged</code>.</td>
 </tr>
 <tr>
-<td>&quot;How many weeks of parental leave do I get?&quot;</td>
-<td>18 weeks for the primary caregiver and 6 for the secondary, cited as <code>[sample.md]</code></td>
+<td>HR pack: &quot;How many weeks of parental leave do I get?&quot;</td>
+<td>18 weeks for the primary caregiver and 6 for the secondary, cited as <code>[acme-employee-handbook.md]</code></td>
+</tr>
+<tr>
+<td>Legal pack: &quot;Can I keep a dog in the flat?&quot;</td>
+<td>One cat or one dog under 15 kg with written consent, plus a 300 EUR pet deposit, cited to the lease.</td>
 </tr>
 <tr>
 <td>&quot;Who won the 2022 World Cup?&quot;</td>
 <td>&quot;I don&#39;t know based on the uploaded documents.&quot;</td>
 </tr>
 <tr>
-<td>Upload a <code>.csv</code></td>
+<td><code>POST /upload</code> in demo mode</td>
+<td><code>403</code></td>
+</tr>
+<tr>
+<td>Upload a <code>.csv</code> (local mode)</td>
 <td><code>400</code> with &quot;only .pdf, .txt and .md are supported.&quot;</td>
 </tr>
 </tbody></table></div>
@@ -927,8 +1015,8 @@ npm install &amp;&amp; npm run dev                                 # :3000
 <td>Responsive UX for long answers</td>
 </tr>
 <tr>
-<td>Delete and re-index documents, per-user collections</td>
-<td>Memory management and access control</td>
+<td>Per-user upload collections with auth</td>
+<td>Memory isolation and access control</td>
 </tr>
 </tbody></table></div>
 <h3>Contribute</h3>

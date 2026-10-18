@@ -30,8 +30,8 @@ svg{color:#17202b} .sk-bg{fill:#ffffff} .sk-fill{fill:#e3f2ef} .sk-accent{stroke
   <text x="250" y="100" text-anchor="middle" class="sk-accent" font-size="12">user submits</text>
   <rect class="sk-bg" x="422" y="54" width="45" height="17" rx="3"/>
   <text x="445" y="66" text-anchor="middle" font-size="12">200 OK</text>
-  <rect class="sk-bg" x="401" y="148" width="88" height="17" rx="3"/>
-  <text x="445" y="160" text-anchor="middle" font-size="12">network / 5xx</text>
+  <rect class="sk-bg" x="382" y="148" width="126" height="17" rx="3"/>
+  <text x="445" y="160" text-anchor="middle" font-size="12">network / 4xx / 5xx</text>
   <rect class="sk-bg" x="334" y="6" width="33" height="17" rx="3"/>
   <text x="350" y="18" text-anchor="middle" font-size="12">done</text>
   <rect class="sk-bg" x="309" y="198" width="82" height="17" rx="3"/>

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 470" role="img" aria-label="Class diagram: main.py depends on ingest, rag and vectorstore; ingest and rag both use vectorstore, which reads Settings; ChatRequest holds Messages and ChatResponse holds Sources." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 540" role="img" aria-label="Class diagram: main.py depends on samples, ingest, rag and vectorstore; samples seeds packs through ingest; ingest and rag both use vectorstore, which reads Settings; ChatRequest holds Messages and ChatResponse holds Sources and Stats." class="sketch" font-family="Kalam, 'Segoe Print', 'Comic Sans MS', cursive" font-size="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
 <style>/* standalone viewing only — stripped when the figure is inlined into a page */
 svg{color:#17202b} .sk-bg{fill:#ffffff} .sk-fill{fill:#e3f2ef} .sk-accent{stroke:#0f766e} text.sk-accent{fill:#0f766e;stroke:none}
 @media (prefers-color-scheme:dark){svg{color:#e4e9ef} .sk-bg{fill:#161d25} .sk-fill{fill:#15302d} .sk-accent{stroke:#4fd1c0} text.sk-accent{fill:#4fd1c0}}
@@ -9,56 +9,68 @@ svg{color:#17202b} .sk-bg{fill:#ffffff} .sk-fill{fill:#e3f2ef} .sk-accent{stroke
 <marker id="arrow-accent" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="sk-accent" d="M1.5 1.5 L8.5 5 L1.5 8.5" fill="none" stroke="currentColor" stroke-width="1.4"/></marker>
 </defs>
 <g filter="url(#rough)">
-  <rect x="300" y="16" width="200" height="106" rx="4"/>
-  <path d="M300 44 H500"/>
-  <rect x="40" y="170" width="220" height="89" rx="4"/>
-  <path d="M40 198 H260"/>
-  <rect x="540" y="170" width="220" height="89" rx="4" class="sk-accent"/>
-  <path d="M540 198 H760"/>
-  <rect x="290" y="200" width="220" height="72" rx="4" class="sk-accent"/>
-  <path d="M290 228 H510"/>
-  <rect x="300" y="330" width="200" height="89" rx="4"/>
-  <path d="M300 358 H500"/>
-  <path d="M340 122 L200 170" marker-end="url(#arrow)"/>
-  <path d="M460 122 L600 170" class="sk-accent" marker-end="url(#arrow-accent)"/>
-  <path d="M400 122 L400 200" marker-end="url(#arrow)"/>
-  <path d="M260 215 L290 230" marker-end="url(#arrow)"/>
-  <path d="M540 215 L510 230" class="sk-accent" marker-end="url(#arrow-accent)"/>
-  <path d="M400 276 L400 330" marker-end="url(#arrow)"/>
-  <path d="M640 262 L640 300 L500 360" marker-end="url(#arrow)"/>
-  <rect x="40" y="330" width="200" height="72" rx="4"/>
-  <path d="M40 358 H240"/>
-  <rect x="560" y="370" width="200" height="72" rx="4"/>
-  <path d="M560 398 H760"/>
+  <rect x="320" y="16" width="220" height="123" rx="4"/>
+  <path d="M320 44 H540"/>
+  <rect x="20" y="30" width="220" height="89" rx="4"/>
+  <path d="M20 58 H240"/>
+  <rect x="20" y="190" width="240" height="72" rx="4"/>
+  <path d="M20 218 H260"/>
+  <rect x="600" y="190" width="240" height="89" rx="4" class="sk-accent"/>
+  <path d="M600 218 H840"/>
+  <rect x="300" y="210" width="260" height="106" rx="4" class="sk-accent"/>
+  <path d="M300 238 H560"/>
+  <rect x="320" y="380" width="220" height="89" rx="4"/>
+  <path d="M320 408 H540"/>
+  <path d="M320 60 L240 70" marker-end="url(#arrow)"/>
+  <path d="M130 106 L130 190" marker-end="url(#arrow)"/>
+  <path d="M360 137 L220 190" marker-end="url(#arrow)"/>
+  <path d="M500 137 L660 190" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M430 137 L430 210" marker-end="url(#arrow)"/>
+  <path d="M260 230 L300 240" marker-end="url(#arrow)"/>
+  <path d="M600 235 L560 245" class="sk-accent" marker-end="url(#arrow-accent)"/>
+  <path d="M430 314 L430 380" marker-end="url(#arrow)"/>
+  <rect x="20" y="380" width="230" height="89" rx="4"/>
+  <path d="M20 408 H250"/>
+  <rect x="600" y="380" width="240" height="89" rx="4"/>
+  <path d="M600 408 H840"/>
 </g>
 <g fill="currentColor" stroke="none">
-  <text x="400.0" y="35" text-anchor="middle" font-weight="700">main</text>
-  <text x="310" y="62" text-anchor="start" font-size="11.5">+GET /health</text>
-  <text x="310" y="79" text-anchor="start" font-size="11.5">+POST /upload</text>
-  <text x="310" y="96" text-anchor="start" font-size="11.5">+GET /documents</text>
-  <text x="310" y="113" text-anchor="start" font-size="11.5">+POST /chat</text>
-  <text x="150.0" y="189" text-anchor="middle" font-weight="700">ingest</text>
-  <text x="50" y="216" text-anchor="start" font-size="11.5">+ingest_file(path, name) int</text>
-  <text x="50" y="233" text-anchor="start" font-size="11.5">-_load(path, name)</text>
-  <text x="50" y="250" text-anchor="start" font-size="11.5">-_split(docs)</text>
-  <text x="650.0" y="189" text-anchor="middle" class="sk-accent" font-weight="700">rag</text>
-  <text x="550" y="216" text-anchor="start" font-size="11.5">+answer(question, history) dict</text>
-  <text x="550" y="233" text-anchor="start" font-size="11.5">-_format_context(docs) str</text>
-  <text x="550" y="250" text-anchor="start" font-size="11.5">-_llm() ChatOpenAI</text>
-  <text x="400.0" y="219" text-anchor="middle" class="sk-accent" font-weight="700">vectorstore</text>
-  <text x="300" y="246" text-anchor="start" font-size="11.5">+get_vector_store() PGVector</text>
-  <text x="300" y="263" text-anchor="start" font-size="11.5">+list_sources() list[str]</text>
-  <text x="400.0" y="349" text-anchor="middle" font-weight="700">Settings</text>
-  <text x="310" y="376" text-anchor="start" font-size="11.5">chat_model · embedding_model</text>
-  <text x="310" y="393" text-anchor="start" font-size="11.5">chunk_size · chunk_overlap</text>
-  <text x="310" y="410" text-anchor="start" font-size="11.5">top_k · history_turns</text>
-  <text x="140.0" y="349" text-anchor="middle" font-weight="700">ChatRequest</text>
-  <text x="50" y="376" text-anchor="start" font-size="11.5">message: str</text>
-  <text x="50" y="393" text-anchor="start" font-size="11.5">history: Message[]</text>
-  <text x="660.0" y="389" text-anchor="middle" font-weight="700">ChatResponse</text>
-  <text x="570" y="416" text-anchor="start" font-size="11.5">answer: str</text>
-  <text x="570" y="433" text-anchor="start" font-size="11.5">sources: Source[]</text>
-  <text x="140" y="430" text-anchor="middle" font-size="11">◆ holds Message {role, content}</text>
-  <text x="660" y="460" text-anchor="middle" font-size="11">◆ holds Source {source, page, snippet}</text>
+  <text x="430.0" y="35" text-anchor="middle" font-weight="700">main</text>
+  <text x="330" y="62" text-anchor="start" font-size="11.5">+GET /health · /config</text>
+  <text x="330" y="79" text-anchor="start" font-size="11.5">+GET /packs · /packs/{id}/rows</text>
+  <text x="330" y="96" text-anchor="start" font-size="11.5">+POST /chat</text>
+  <text x="330" y="113" text-anchor="start" font-size="11.5">+POST /upload (local mode)</text>
+  <text x="330" y="130" text-anchor="start" font-size="11.5">+DELETE /documents/{name}</text>
+  <text x="130.0" y="49" text-anchor="middle" font-weight="700">samples</text>
+  <text x="30" y="76" text-anchor="start" font-size="11.5">+packs() list[dict]</text>
+  <text x="30" y="93" text-anchor="start" font-size="11.5">+seed()</text>
+  <text x="30" y="110" text-anchor="start" font-size="11.5">+pack_ids() set[str]</text>
+  <text x="140.0" y="209" text-anchor="middle" font-weight="700">ingest</text>
+  <text x="30" y="236" text-anchor="start" font-size="11.5">+ingest_file(path, name, pack)</text>
+  <text x="30" y="253" text-anchor="start" font-size="11.5">-_load · _split · _file_hash</text>
+  <text x="720.0" y="209" text-anchor="middle" class="sk-accent" font-weight="700">rag</text>
+  <text x="610" y="236" text-anchor="start" font-size="11.5">+answer(question, history, pack)</text>
+  <text x="610" y="253" text-anchor="start" font-size="11.5">-_format_context(docs) str</text>
+  <text x="610" y="270" text-anchor="start" font-size="11.5">-_llm() ChatOpenAI</text>
+  <text x="430.0" y="229" text-anchor="middle" class="sk-accent" font-weight="700">vectorstore</text>
+  <text x="310" y="256" text-anchor="start" font-size="11.5">+get_vector_store() PGVector</text>
+  <text x="310" y="273" text-anchor="start" font-size="11.5">+pack_documents · pack_rows</text>
+  <text x="310" y="290" text-anchor="start" font-size="11.5">+stored_versions · delete_stale</text>
+  <text x="310" y="307" text-anchor="start" font-size="11.5">+delete_source · count_chunks</text>
+  <text x="430.0" y="399" text-anchor="middle" font-weight="700">Settings</text>
+  <text x="330" y="426" text-anchor="start" font-size="11.5">chat_model · embedding_model</text>
+  <text x="330" y="443" text-anchor="start" font-size="11.5">chunk_size · chunk_overlap · top_k</text>
+  <text x="330" y="460" text-anchor="start" font-size="11.5">allow_uploads · rate limits</text>
+  <text x="135.0" y="399" text-anchor="middle" font-weight="700">ChatRequest</text>
+  <text x="30" y="426" text-anchor="start" font-size="11.5">message: str (≤ 1000)</text>
+  <text x="30" y="443" text-anchor="start" font-size="11.5">history: Message[] (≤ 20)</text>
+  <text x="30" y="460" text-anchor="start" font-size="11.5">pack: str</text>
+  <text x="720.0" y="399" text-anchor="middle" font-weight="700">ChatResponse</text>
+  <text x="610" y="426" text-anchor="start" font-size="11.5">answer: str</text>
+  <text x="610" y="443" text-anchor="start" font-size="11.5">sources: Source[]</text>
+  <text x="610" y="460" text-anchor="start" font-size="11.5">stats: Stats</text>
+  <text x="135" y="490" text-anchor="middle" font-size="11">◆ holds Message {role, content}</text>
+  <text x="720" y="490" text-anchor="middle" font-size="11">◆ Source {rank, source, page, chunk, score}</text>
+  <text x="720" y="510" text-anchor="middle" font-size="11">◆ Stats {retrieve_ms, generate_ms, tokens}</text>
 </g>
 </svg>
