@@ -2,6 +2,23 @@
 
 Thanks for the interest. This repo takes three kinds of contributions.
 
+## How to send a change
+
+1. **Fork** the repo on GitHub and clone your fork:
+   ```bash
+   git clone https://github.com/<you>/claude-skills.git
+   cd claude-skills
+   ```
+2. **Branch:** `git checkout -b improve-market-teardown-trigger`.
+3. **Change** one skill (or add one), and test it in a fresh Claude session.
+4. **Check:**
+   ```bash
+   python3 scripts/check_skills.py        # names, licenses, READMEs, no personal paths
+   ./<skill-name>/build.sh                # the .skill archive builds
+   ```
+   For `demo-doc` or `arch-doc` figures: `python3 <skill>/scripts/figures.py check <figures-dir>`.
+5. **Open a pull request** against `main` and fill in the template. CI runs the same checks.
+
 ## 1. Report an issue
 
 If a skill produces a bad result, misses a case, or doesn't fire when it should, open an issue with:
@@ -29,7 +46,9 @@ New skills are welcome. To keep the repo coherent, each skill folder must contai
 ```
 <skill-name>/
 ├── SKILL.md              # YAML frontmatter (name, description) + instructions
-├── README.md             # what it does, install, adapt notes, one example
+├── README.md             # what it does, install, adapt notes, known limits, one example
+├── LICENSE               # MIT, copied from the repo root
+├── build.sh              # zips the folder into dist/<name>.skill (copy one from another skill)
 ├── references/           # optional: supporting docs the skill reads
 └── assets/               # optional: templates the skill uses
 ```
@@ -49,7 +68,8 @@ Before opening the PR:
 
 1. Test the skill end-to-end in a fresh Claude Code session (or in Claude Desktop after building the `.skill`).
 2. Confirm the trigger fires on the example prompts in your README.
-3. Run `grep -rniE 'your-name|your-project|/Users/'` inside the skill folder — no personal references.
+3. Run `python3 scripts/check_skills.py` — it also catches personal paths and placeholders.
+4. Add the skill to the table in the root `README.md`.
 
 ## Style
 

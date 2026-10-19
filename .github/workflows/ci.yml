@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check every skill folder (names, MIT licenses, READMEs, no personal paths)
+        run: python3 scripts/check_skills.py
+
+      - name: Build every .skill archive
+        run: |
+          for build in */build.sh; do
+            bash "$build" > /dev/null
+            echo "built ${build%/build.sh}"
+          done
+
+      - name: Lint demo-doc and arch-doc figures
+        run: |
+          python3 demo-doc/scripts/figures.py check demo-doc/examples/rag-demo/figures
+          python3 arch-doc/scripts/figures.py check arch-doc/examples/coala-cognitive-architecture/figures
+          python3 demo-doc/scripts/figures.py check docs/figures
+
+      - name: Render the carousel example
+        run: |
+          python3 -m pip install -r linkedin-tech-carousel/requirements.txt
+          python3 linkedin-tech-carousel/scripts/render_deck.py \
+            linkedin-tech-carousel/examples/spark-shuffle.json --out-dir out --basename spark-shuffle
+          test -f out/spark-shuffle.pdf

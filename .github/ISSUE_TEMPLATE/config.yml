@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How to contribute
+    url: https://github.com/nitingoswami-io/claude-skills/blob/main/CONTRIBUTING.md
+    about: Fork, branch, run the checks, open a pull request.

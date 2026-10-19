@@ -2,6 +2,8 @@
 
 A Claude skill that turns your research on a market, product, or startup idea into a **data-dense, verdict-driven teardown** — around 1,500 words, argued from figures you can actually cite, with a bold conclusion at the end and a dated reference list. Ships alongside a companion short post that drives readers to the teardown without spoiling the verdict.
 
+**Status:** a learning template, shared as-is under MIT. Read it, run it, adapt it. No API keys or environment variables needed.
+
 The skill is opinionated about *how* to write the piece — that's the point. It enforces a seven-step discipline (verdict-first, source-traceable, one currency per comparison, verdict withheld from the teaser) that separates a competent analytical writeup from another market-map think-piece.
 
 ## What you get
@@ -32,7 +34,7 @@ This skill works in both **Claude Code** (the CLI) and **Claude Desktop** (the a
 Copy the skill folder into your local skills directory:
 
 ```bash
-git clone https://github.com/<your-username>/claude-skills.git
+git clone https://github.com/nitingoswami-io/claude-skills.git
 cp -r claude-skills/market-teardown ~/.claude/skills/market-teardown
 ```
 
@@ -54,7 +56,7 @@ Claude will validate the frontmatter, show you a review card, and save it with o
 
 1. Build the `.skill` archive using this skill's own build script:
    ```bash
-   git clone https://github.com/<your-username>/claude-skills.git
+   git clone https://github.com/nitingoswami-io/claude-skills.git
    cd claude-skills/market-teardown
    ./build.sh
    ```
@@ -93,3 +95,17 @@ See [`references/example-teardown.md`](references/example-teardown.md) for a ful
 ## Attribution
 
 This skill is adapted from an internal one used to produce a weekly analytical newsletter. It's now MIT-licensed and open for anyone to use, adapt, or extend.
+
+## Known limits
+
+- It compresses research you already have; with fewer than about ten sourced figures it stops and says so.
+- It writes for the LinkedIn / Substack / Medium subset of Markdown (no tables, H2 only).
+- Figures are only as current as your sources. Re-check dates before publishing.
+
+## Contributing
+
+Issues and pull requests are welcome: fork the repo, branch, run `python3 scripts/check_skills.py` from the repo root, and open a PR. See [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE). Copyright (c) 2026 Nitin Goswami.

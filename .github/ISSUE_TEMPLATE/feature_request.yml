@@ -1,0 +1,15 @@
+name: Idea or new skill
+description: Suggest an improvement to a skill, a new example, or a new skill.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it helps
+      description: A case that fails today, or a job no skill here does yet.

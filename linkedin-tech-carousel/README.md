@@ -2,6 +2,8 @@
 
 A Claude skill that turns **one technical concept** into a 3-slide LinkedIn carousel — delivered as a swipeable PDF plus PNGs, sized exactly for the feed, with ready-to-paste post copy.
 
+**Status:** a learning template, shared as-is under MIT. Read it, run it, adapt it. No API keys or environment variables needed.
+
 The skill is opinionated. It refuses to shrink a conference talk into three slides and insists on one mechanism per deck. That constraint — plus a fixed slide-1 / slide-2 / slide-3 contract — is the difference between a carousel someone swipes and one they scroll past.
 
 ## What you get
@@ -77,7 +79,7 @@ This skill works in both **Claude Code** (the CLI) and **Claude Desktop** (the a
 Copy the skill folder into your local skills directory:
 
 ```bash
-git clone https://github.com/<your-username>/claude-skills.git
+git clone https://github.com/nitingoswami-io/claude-skills.git
 cp -r claude-skills/linkedin-tech-carousel ~/.claude/skills/linkedin-tech-carousel
 ```
 
@@ -99,7 +101,7 @@ Claude will validate the frontmatter, show you a review card, and save it with o
 
 1. Build the `.skill` archive using this skill's own build script:
    ```bash
-   git clone https://github.com/<your-username>/claude-skills.git
+   git clone https://github.com/nitingoswami-io/claude-skills.git
    cd claude-skills/linkedin-tech-carousel
    ./build.sh
    ```
@@ -140,3 +142,17 @@ The schema itself lives in [`references/layouts.md`](references/layouts.md) — 
 ## Attribution
 
 This skill is adapted from an internal one used to produce technical LinkedIn carousels. It's now MIT-licensed and open for anyone to use, adapt, or extend.
+
+## Known limits
+
+- Three slides, one mechanism: broad topics are narrowed on purpose.
+- matplotlib shrinks text instead of clipping it, so always look at the PNGs.
+- Fonts fall back to system fonts when Liberation Sans/Mono aren't installed.
+
+## Contributing
+
+Issues and pull requests are welcome: fork the repo, branch, run `python3 scripts/check_skills.py` from the repo root, and open a PR. See [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE). Copyright (c) 2026 Nitin Goswami.

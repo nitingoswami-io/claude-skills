@@ -4,6 +4,14 @@ A small, growing collection of [Claude Skills](https://docs.claude.com/en/docs/c
 
 **Each skill is a fully self-contained folder.** Everything a skill needs — its manifest, references, build script, license, and README — lives inside its own directory. You can `git clone` this repo and cherry-pick a single skill folder into `~/.claude/skills/` without dragging the rest of the repo along. Skills are opinionated: they encode a specific way of doing a specific thing well, so you install one and get a good result on your first try.
 
+**Status:** learning templates, shared as-is. Each skill encodes one way of doing one job well; read it, run it, and adapt it to your own work. They are not production-hardened tools.
+
+**Live demo:** not applicable. Skills run inside your own Claude, so there is nothing to host.
+
+![How a skill runs: the folder is installed into Claude, a matching prompt loads SKILL.md, Claude reads references, runs scripts and writes the outputs](docs/figures/fig-01-pipeline.svg)
+
+*Fig. 1: How a skill runs. Claude does the writing; scripts only render, build or check.*
+
 ## Skills in this repo
 
 | Skill | What it does |
@@ -14,6 +22,13 @@ A small, growing collection of [Claude Skills](https://docs.claude.com/en/docs/c
 | [`arch-doc/`](arch-doc/) | Explain a reference architecture as a concept ("what is an agent harness?") — 7 tutorial-style sections, 2–3 hand-drawn diagrams, links to demos that implement it, and a mandatory Credits & sources list that gives credit to the original sources. |
 
 More skills will be added over time. See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to propose one.
+
+## What you can learn
+
+- **How to write a skill that triggers reliably:** each `description:` names the outputs, the trigger phrases and two or three example prompts.
+- **How to keep a long skill scannable:** `SKILL.md` holds the steps and rules; the deep detail sits in `references/`, read only when needed.
+- **When to add code:** `linkedin-tech-carousel` renders slides with a Python script; `demo-doc` and `arch-doc` lint their figures with one. `market-teardown` needs no code at all.
+- **How to package a skill:** every folder builds to a `.skill` archive with its own `build.sh`.
 
 ## Install a skill
 
@@ -26,7 +41,7 @@ The examples below use `market-teardown`. Swap in whatever skill you're installi
 Copy the skill folder into your local skills directory:
 
 ```bash
-git clone https://github.com/<your-username>/claude-skills.git
+git clone https://github.com/nitingoswami-io/claude-skills.git
 cp -r claude-skills/market-teardown ~/.claude/skills/market-teardown
 ```
 
@@ -48,7 +63,7 @@ Claude will validate the frontmatter, show you a review card, and save it in one
 
 1. Build the `.skill` archive using the skill's own build script:
    ```bash
-   git clone https://github.com/<your-username>/claude-skills.git
+   git clone https://github.com/nitingoswami-io/claude-skills.git
    cd claude-skills/market-teardown
    ./build.sh
    ```
@@ -76,6 +91,9 @@ claude-skills/
 ├── README.md                 # you are here — index of skills
 ├── LICENSE                   # MIT (covers the repo as a whole)
 ├── CONTRIBUTING.md           # how to propose changes or new skills
+├── scripts/check_skills.py   # checks every skill folder (run by CI)
+├── docs/figures/             # figures used in this README
+├── .github/                  # CI, issue and PR templates
 └── <skill-name>/             # one directory per skill — fully self-contained
     ├── SKILL.md              # manifest + instructions (required)
     ├── README.md             # human-facing docs (required)
@@ -87,6 +105,29 @@ claude-skills/
 ```
 
 Each skill directory is the source of truth. Zipped `.skill` bundles are build artifacts and are gitignored.
+
+## How it works
+
+Claude loads only each skill's name and `description:` at the start. When your prompt matches a description, Claude reads that skill's `SKILL.md` and follows it, opening files in `references/` or `assets/` and running `scripts/` only when a step says to (Fig. 1).
+
+No skill here needs an API key or environment variables. `linkedin-tech-carousel` needs Python 3 and matplotlib (`requirements.txt`); `demo-doc` and `arch-doc` use Python 3 for their figure checks. The others are instructions only.
+
+## Adapting a skill
+
+- **Change when it fires:** edit the `description:` in `SKILL.md`.
+- **Change the format or voice:** edit the rules in `SKILL.md` and the templates in `assets/`.
+- **Change the look:** `linkedin-tech-carousel` themes live in `scripts/render_deck.py`; the `demo-doc` and `arch-doc` palettes live in their `references/`.
+- **Make it yours:** copy the folder, rename it (the folder name and `name:` must match), and run `python3 scripts/check_skills.py`.
+
+## Known limits
+
+- Output quality depends on the model and on the material you give it. `market-teardown` refuses to write without enough sourced figures, by design.
+- The figure checks catch long labels, not layout mistakes. Look at the rendered figures.
+- Claude Desktop menu names in the install steps may differ between app versions.
+
+## Contributing
+
+Issues and pull requests are welcome: fork, branch, run `python3 scripts/check_skills.py`, and open a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Why open-source
 

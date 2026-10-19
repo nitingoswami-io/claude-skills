@@ -2,6 +2,8 @@
 
 A Claude skill that writes **reference architectures as concept explainers**: *What is an agent harness?*, *What is AI Ops?*, *CoALA: how language agents remember, decide and act*. Each is taught the way a good textbook chapter would teach it, with two or three hand-drawn diagrams. Every one **credits the original sources** it draws on.
 
+**Status:** a learning template, shared as-is under MIT. Read it, run it, adapt it. No API keys or environment variables needed.
+
 It's the sibling of [`demo-doc`](../demo-doc/):
 - **demo-doc** documents one running demo: its repo, run steps and contributions.
 - **arch-doc** explains an idea, never links a repository, and points to the demos that implement it.
@@ -55,6 +57,16 @@ cp -r claude-skills/arch-doc ~/.claude/skills/arch-doc
 ```
 
 In Claude Desktop, drag the folder into a chat and say *"Please install this as a skill."*, or run `./build.sh` and upload `dist/arch-doc.skill`.
+
+## Known limits
+
+- It explains concepts, not codebases; it never links a repository.
+- It never invents authors, years or URLs; a source it could not verify is flagged as TBD for you to check.
+- The website MDX targets the author's site components; elsewhere, use ARCHITECTURE.md or the HTML page.
+
+## Contributing
+
+Issues and pull requests are welcome: fork the repo, branch, run `python3 scripts/check_skills.py` from the repo root, and open a PR. See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## License
 

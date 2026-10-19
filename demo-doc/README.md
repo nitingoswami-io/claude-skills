@@ -2,6 +2,8 @@
 
 A Claude skill that writes the **design document for a software demo** in one fixed house format, so every demo you publish looks and reads the same.
 
+**Status:** a learning template, shared as-is under MIT. Read it, run it, adapt it. No API keys or environment variables needed.
+
 You get a technical spec sheet with:
 - a numbered contents rail and a header meta grid (Stack, Models, Date, Status);
 - a **CoALA pipeline strip** that maps the demo onto the Cognitive Architectures for Language Agents framework;
@@ -63,6 +65,16 @@ Either:
 - **Your own site:** the MDX output expects the four components above. If your site has none, ask for the HTML or Markdown output only.
 - **Figures in another style:** change the skeleton in `references/diagrams.md`. Drop the `rough` filter for clean lines, or swap the Kalam font. Keep `currentColor` and the `sk-*` classes so theming still works.
 - **No CoALA:** the strip is a 5-stage data-flow map. You can relabel the role line, but keep exactly five stages so the layout holds.
+
+## Known limits
+
+- It documents what the code does; it can't verify claims the code doesn't show. Unknowns are marked TBD.
+- The figure check catches long labels, not layout mistakes. Look at the rendered figures.
+- The website MDX targets the author's site components; elsewhere, use DESIGN.md or the HTML page.
+
+## Contributing
+
+Issues and pull requests are welcome: fork the repo, branch, run `python3 scripts/check_skills.py` from the repo root, and open a PR. See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## License
 

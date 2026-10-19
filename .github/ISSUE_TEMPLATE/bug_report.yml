@@ -1,0 +1,29 @@
+name: Skill problem
+description: A skill gave a bad result, missed a case, or didn't fire.
+labels: [bug]
+body:
+  - type: dropdown
+    id: skill
+    attributes:
+      label: Skill
+      options: [market-teardown, linkedin-tech-carousel, demo-doc, arch-doc, other]
+    validations:
+      required: true
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Your prompt
+      description: Redact anything private.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What you got, and what you expected
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Where you ran it
+      description: Claude Code, Claude Desktop or claude.ai, and the model if you know it.
